@@ -1,0 +1,83 @@
+# 기본적으로 SwiftLint는 기본 규칙 세트를 사용.
+
+
+disabled_rules: # 실행에서 제외할 기본 규칙 식별자
+  - colon               # 콜론 관련 규칙 제외
+  - comma               # 콤마 관련 규칙 제외
+  - control_statement   # 제어문 관련 규칙 제외
+  - trailing_whitespace # 코드 라인 끝에 불필요한 공백 
+
+opt_in_rules: # 기본적으로 꺼져 있는 규칙, 활성화하려면 추가
+  - empty_count         # 비어있는 count 검사
+                        # 사용 가능한 모든 규칙은 `swiftlint rules` 실행으로 확인 가능
+
+# 또는, 모든 규칙을 명시적으로 지정 가능
+# only_rules: # disabled_rules 및 opt_in_rules를 제거해야 함
+#   - empty_parameters
+#   - vertical_whitespace
+
+#analyzer_rules: # `swiftlint analyze` 실행 시 적용되는 규칙
+#  - explicit_self       # self를 명시적으로 작성하도록 검사
+
+# linting에 포함할 대소문자 구분 경로 목록
+# included:
+#  - Sources
+
+excluded: # linting에서 제외할 대소문자 구분 경로 목록. included보다 우선 적용
+  - Carthage
+  - Pods
+  - Sources/ExcludedFolder
+  - Sources/ExcludedFile.swift
+  - Sources/*/ExcludedFile.swift # 와일드카드로 파일 제외
+
+# true면 lint 대상 파일이 없어도 실패하지 않음
+allow_zero_lintable_files: true
+
+# true면 모든 경고를 오류로 처리
+strict: false
+
+# 기준선 파일 경로. 위반 사항 필터링에 사용
+#baseline: Baseline.json
+
+# 새 기준선 파일을 저장할 경로
+#write_baseline: Baseline.json
+
+# true면 linting 또는 분석 후 SwiftLint 업데이트 검사
+check_for_updates: true
+
+# 설정 파일에서 조정 가능한 규칙들
+force_cast: warning # 강제 캐스팅 시 경고 처리
+force_try:
+  severity: warning # 강제 try 시 경고 처리
+
+# 경고/오류 수준을 설정할 수 있는 규칙들
+line_length: 110 # 최대 라인 길이
+
+type_body_length: # 타입 본문 길이 제한
+  - 300 # 경고
+  - 400 # 오류
+
+file_length: # 파일 길이 제한
+  warning: 500
+  error: 1200
+
+# 타입 이름 규칙 설정
+type_name:
+  min_length: 2 # 최소 길이 (경고)
+  max_length:    # 최대 길이
+    warning: 40
+    error: 50
+  excluded: iPhone # 검사에서 제외할 이름
+  allowed_symbols: ["_"] # 타입 이름에서 허용할 특수 문자
+
+# 식별자 이름 규칙 설정
+identifier_name:
+  min_length: # 최소 길이 설정
+    error: 2 # 오류 처리 최소 길이
+  excluded: # 검사에서 제외할 식별자 이름 목록
+    - id
+    - URL
+    - GlobalAPIKey
+
+# 보고서 형식 설정
+reporter: "xcode" # 보고서 형식 (xcode, json, csv, checkstyle, codeclimate, junit, html, emoji, sonarqube, markdown, github-actions-logging, summary)
