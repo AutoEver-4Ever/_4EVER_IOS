@@ -1,5 +1,44 @@
 
-.DS_store
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+
+# Xcode
+build/
+DerivedData/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# User-specific Xcode files
+*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcshareddata/
+*.xcworkspace/xcuserdata/
 *.xcuserstate
-*.xcuserdata/
-*.xcworkspace/
+xcuserdata/
+
+# Swift Package Manager
+.build/
+Package.resolved
+
+# Carthage
+Carthage/
+
+# CocoaPods
+Pods/
+
+# Editors
+.vscode/
+.idea/
+
+.DS_Store
