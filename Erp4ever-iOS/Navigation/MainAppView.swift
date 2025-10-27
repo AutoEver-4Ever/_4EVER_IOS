@@ -13,7 +13,7 @@ struct MainAppView: View {
             NavigationStack { HomeView() }
                 .tabItem { Label("홈", systemImage: "house") }
 
-            NavigationStack { QuotesListView() }
+            NavigationStack { QuoteListView() }
                 .tabItem { Label("견적", systemImage: "doc.text") }
 
             NavigationStack { OrdersListView() }

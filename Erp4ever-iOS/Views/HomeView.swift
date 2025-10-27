@@ -15,7 +15,7 @@ struct HomeView: View {
                 title: "견적 목록",
                 systemImage: "doc.text.magnifyingglass",
                 color: .green,
-                destination: AnyView(QuotesListView())
+                destination: AnyView(QuoteListView())
             ),
             QuickAction(
                 title: "주문 관리",
@@ -121,15 +121,6 @@ struct HomeView: View {
 }
 
 
-// MARK: - 임시 화면
-struct NewQuoteView: View {
-    var body: some View { Text("견적 요청 작성").navigationTitle("견적 요청") }
-}
-
-struct QuotesListView: View {
-    var body: some View { Text("견적 목록").navigationTitle("견적 목록") }
-}
-
 struct OrdersListView: View {
     var body: some View { Text("주문 관리").navigationTitle("주문 관리") }
 }
@@ -138,7 +129,6 @@ struct PurchasesListView: View {
     var body: some View { Text("매입전표").navigationTitle("매입전표") }
 }
 
-// MARK: - Preview
 #Preview {
     MainAppView()
 }
