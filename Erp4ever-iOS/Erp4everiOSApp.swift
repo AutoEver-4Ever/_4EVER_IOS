@@ -9,7 +9,7 @@ import SwiftUI
 
 @main
 struct Erp4everiOSApp: App {
-    
+    var a = 2
     var body: some Scene {
         WindowGroup {
             ContentView()
