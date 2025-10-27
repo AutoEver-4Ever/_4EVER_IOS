@@ -16,7 +16,7 @@ struct ActivityRow: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 6) {
                     TypeLabel(text: activity.type)
-                    StatusLabel(text: activity.status)
+                    StatusLabel(statusCode: activity.status)
                 }
                 Text(activity.title)
                     .font(.subheadline.weight(.medium))

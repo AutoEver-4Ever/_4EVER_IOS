@@ -20,3 +20,6 @@ struct Card<Content: View>: View {
     }
     
 }
+
+
+
