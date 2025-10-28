@@ -16,7 +16,7 @@ struct MainAppView: View {
             NavigationStack { QuoteListView() }
                 .tabItem { Label("견적", systemImage: "doc.text") }
 
-            NavigationStack { OrdersListView() }
+            NavigationStack { OrderListView() }
                 .tabItem { Label("주문", systemImage: "cart") }
 
             NavigationStack { PurchasesListView() }

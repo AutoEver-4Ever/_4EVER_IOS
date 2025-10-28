@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct QuoteCard: View {
-    let quote: Quote
+    let quote: Quotes
     let statusCode: String
     let formatAmount: (Int) -> String
     

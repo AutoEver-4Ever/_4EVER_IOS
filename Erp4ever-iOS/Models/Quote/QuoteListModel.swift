@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Quote: Identifiable {
+struct Quotes: Identifiable {
     let id: String
     let customerName: String
     let manager: String

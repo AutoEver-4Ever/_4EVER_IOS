@@ -25,7 +25,7 @@ struct NewQuoteView: View {
     @State private var warrantyPeriod = ""
     
     // 품목
-    @State private var items: [QuoteItem] = []
+    @State private var items: [NewQuoteItem] = []
     @State private var remarks = ""
     
     // 옵션
@@ -45,11 +45,11 @@ struct NewQuoteView: View {
     }
     
     private func addItem() {
-        let newItem = QuoteItem(id: UUID().uuidString, productName: "", specification: "", quantity: 1, unitPrice: 0, amount: 0)
+        let newItem = NewQuoteItem(id: UUID().uuidString, productName: "", specification: "", quantity: 1, unitPrice: 0, amount: 0)
         items.append(newItem)
     }
     
-    private func updateItem(_ id: String, field: WritableKeyPath<QuoteItem, Int>, value: Int) {
+    private func updateItem(_ id: String, field: WritableKeyPath<NewQuoteItem, Int>, value: Int) {
         if let index = items.firstIndex(where: { $0.id == id }) {
             items[index][keyPath: field] = value
             items[index].amount = items[index].quantity * items[index].unitPrice
@@ -84,7 +84,12 @@ struct NewQuoteView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                
+                HStack {
+                    Text("견적서 작성")
+                        .font(.title3.bold())
+                }.frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 20)
+               
                 Section(title: "고객 정보") {
                     InputField(title: "고객명", text: $customerName)
                     InputField(title: "담당자", text: $manager)
@@ -207,6 +212,8 @@ struct NewQuoteView: View {
             .padding()
         }
         .navigationTitle("견적 요청")
+        .navigationBarHidden(true)
+        .background(Color(.systemGroupedBackground))
     }
 }
 

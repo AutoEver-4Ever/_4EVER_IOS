@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct QuoteItem: Identifiable {
+struct NewQuoteItem: Identifiable {
     let id: String
     var productName: String
     var specification: String

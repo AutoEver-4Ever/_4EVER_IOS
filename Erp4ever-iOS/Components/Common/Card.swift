@@ -14,12 +14,10 @@ struct Card<Content: View>: View {
             content()
         }
         .padding(14)
+        .frame(maxWidth: .infinity)
         .background(.white)
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .shadow(color: .black.opacity(0.06), radius: 8, y: 2)
     }
     
 }
-
-
-
