@@ -84,7 +84,12 @@ struct NewQuoteView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                
+                HStack {
+                    Text("견적서 작성")
+                        .font(.title3.bold())
+                }.frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 20)
+               
                 Section(title: "고객 정보") {
                     InputField(title: "고객명", text: $customerName)
                     InputField(title: "담당자", text: $manager)
@@ -207,6 +212,8 @@ struct NewQuoteView: View {
             .padding()
         }
         .navigationTitle("견적 요청")
+        .navigationBarHidden(true)
+        .background(Color(.systemGroupedBackground))
     }
 }
 

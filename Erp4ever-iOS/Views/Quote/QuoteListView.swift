@@ -63,7 +63,14 @@ struct QuoteListView: View {
                         .textFieldStyle(PlainTextFieldStyle())
                 }
                 .padding(10)
-                .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray.opacity(0.3)))
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.white)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray.opacity(0.3))
+                        )
+                )
                 .padding(.horizontal)
                 .padding(.bottom, 8)
                 
@@ -102,6 +109,7 @@ struct QuoteListView: View {
                 .background(Color(.systemGroupedBackground))
             }
             .navigationBarHidden(true)
+            .background(Color(.systemGroupedBackground))
         }
     }
 }

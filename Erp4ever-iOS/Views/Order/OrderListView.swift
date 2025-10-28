@@ -48,9 +48,17 @@ struct OrderListView: View {
                         .foregroundColor(.gray)
                     TextField("주문번호로 검색", text: $searchTerm)
                         .textFieldStyle(PlainTextFieldStyle())
+                    
                 }
                 .padding(10)
-                .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray.opacity(0.3)))
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.white)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray.opacity(0.3))
+                        )
+                )
                 .padding(.horizontal)
                 .padding(.bottom, 8)
                 
@@ -87,6 +95,7 @@ struct OrderListView: View {
                 .background(Color(.systemGroupedBackground))
             }
             .navigationBarHidden(true)
+            .background(Color(.systemGroupedBackground))
         }
     }
 }
