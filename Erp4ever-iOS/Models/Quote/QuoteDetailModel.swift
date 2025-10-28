@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct QuoteItemModel: Identifiable {
+struct QuoteDetailItemModel: Identifiable {
     let id = UUID()
     var productName: String
     var specification: String
@@ -30,7 +30,7 @@ struct QuoteDetailModel {
     var paymentTerms: String
     var deliveryTerms: String
     var warrantyPeriod: String
-    var items: [QuoteItemModel]
+    var items: [QuoteDetailItemModel]
     var remarks: String
     var status: String
     var totalAmount: Int

@@ -9,14 +9,14 @@ import SwiftUI
 
 struct QuoteListView: View {
     @State private var searchTerm: String = ""
-    @State private var quotes: [Quote] = [
-        Quote(id: "Q2024-001", customerName: "현대자동차", manager: "김철수", quoteDate: "2024-01-15", deliveryDate: "2024-02-15", amount: 15000000, status: "검토중"),
-        Quote(id: "Q2024-002", customerName: "기아자동차", manager: "이영희", quoteDate: "2024-01-13", deliveryDate: "2024-02-10", amount: 8500000, status: "승인됨"),
-        Quote(id: "Q2024-003", customerName: "쌍용자동차", manager: "박민수", quoteDate: "2024-01-10", deliveryDate: "2024-02-05", amount: 12000000, status: "거절됨")
+    @State private var quotes: [Quotes] = [
+        Quotes(id: "Q2024-001", customerName: "현대자동차", manager: "김철수", quoteDate: "2024-01-15", deliveryDate: "2024-02-15", amount: 15000000, status: "검토중"),
+        Quotes(id: "Q2024-002", customerName: "기아자동차", manager: "이영희", quoteDate: "2024-01-13", deliveryDate: "2024-02-10", amount: 8500000, status: "승인됨"),
+        Quotes(id: "Q2024-003", customerName: "쌍용자동차", manager: "박민수", quoteDate: "2024-01-10", deliveryDate: "2024-02-05", amount: 12000000, status: "거절됨")
     ]
     
     // 필터링
-    private var filteredQuotes: [Quote] {
+    private var filteredQuotes: [Quotes] {
         if searchTerm.isEmpty {
             return quotes
         }
