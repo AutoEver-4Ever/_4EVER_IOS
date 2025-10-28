@@ -7,9 +7,6 @@
 
 import SwiftUI
 
-
-
-// MARK: - View
 struct OrderDetailView: View {
     @Environment(\.dismiss) private var dismiss
     let id: String
@@ -53,13 +50,12 @@ struct OrderDetailView: View {
         }
     }
     
-    // MARK: Body
     var body: some View {
         ScrollView {
             VStack(spacing: 14) {
                 
                 // 주문 기본 정보
-                OrderDetailCard {
+                Card {
                     HStack {
                         Text(order.id)
                             .font(.title3.weight(.semibold))
@@ -68,18 +64,18 @@ struct OrderDetailView: View {
                     }
                     .padding(.bottom, 6)
                     
-                    OrderDetailKeyValueRow(key: "주문일자", value: order.orderDate)
-                    OrderDetailKeyValueRow(key: "납기일", value: order.deliveryDate)
-                    OrderDetailKeyValueRow(key: "주문금액", value: formatAmount(order.amount), valueStyle: .emphasis)
+                    KeyValueRow(key: "주문일자", value: order.orderDate)
+                    KeyValueRow(key: "납기일", value: order.deliveryDate)
+                    KeyValueRow(key: "주문금액", value: formatAmount(order.amount), valueStyle: .emphasis)
                     
                     if let tracking = order.trackingNumber {
-                        OrderDetailKeyValueRow(key: "운송장번호", value: tracking, valueColor: Color.blue)
+                        KeyValueRow(key: "운송장번호", value: tracking)
                     }
                 }
                 
                 // 주문 진행 상태
-                OrderDetailCard {
-                    SectionTitle("주문 진행 상태")
+                Card {
+                    CardTitle("주문 진행 상태")
                     VStack(alignment: .leading, spacing: 10) {
                         ForEach(statusSteps, id: \.0.rawValue) { step, completed, current in
                             HStack(spacing: 10) {
@@ -101,21 +97,24 @@ struct OrderDetailView: View {
                                     )
                                     .fontWeight(current ? .semibold : .regular)
                             }
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }
+                       
+                    
                 }
                 
                 // 고객 정보
-                OrderDetailCard {
-                    SectionTitle("고객 정보")
-                    OrderDetailKeyValueRow(key: "고객명", value: order.customerName)
-                    OrderDetailKeyValueRow(key: "담당자", value: order.manager)
-                    OrderDetailKeyValueRow(key: "이메일", value: order.email)
+                Card {
+                    CardTitle("고객 정보")
+                    KeyValueRow(key: "고객명", value: order.customerName)
+                    KeyValueRow(key: "담당자", value: order.manager)
+                    KeyValueRow(key: "이메일", value: order.email)
                 }
                 
                 // 배송 정보
-                OrderDetailCard {
-                    SectionTitle("배송 정보")
+                Card {
+                    CardTitle("배송 정보")
                     VStack(alignment: .leading, spacing: 6) {
                         Text("배송지")
                             .font(.footnote)
@@ -124,11 +123,12 @@ struct OrderDetailView: View {
                             .font(.subheadline)
                             .foregroundColor(.primary)
                     }
+                    .frame(maxWidth:.infinity, alignment: .leading)
                 }
                 
                 // 주문 품목
-                OrderDetailCard {
-                    SectionTitle("주문 품목")
+                Card {
+                    CardTitle("주문 품목")
                     ForEach(order.items) { item in
                         VStack(alignment: .leading, spacing: 6) {
                             HStack {
@@ -177,50 +177,7 @@ struct OrderDetailView: View {
     }
 }
 
-// MARK: - Subviews
-private struct OrderDetailCard<Content: View>: View {
-    @ViewBuilder var content: Content
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            content
-        }
-        .padding(14)
-        .background(.white)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .shadow(color: .black.opacity(0.05), radius: 4, y: 2)
-    }
-}
 
-private struct SectionTitle: View {
-    let text: String
-    init(_ text: String) { self.text = text }
-    var body: some View {
-        Text(text)
-            .font(.headline)
-            .foregroundStyle(.primary)
-            .padding(.bottom, 4)
-    }
-}
-
-private enum ValueStyle { case normal, emphasis }
-
-private struct OrderDetailKeyValueRow: View {
-    let key: String
-    let value: String
-    var valueStyle: ValueStyle = .normal
-    var valueColor: Color? = nil
-    var body: some View {
-        HStack {
-            Text(key)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-            Spacer()
-            Text(value)
-                .font(valueStyle == .emphasis ? .body.bold() : .footnote)
-                .foregroundStyle(valueColor ?? (valueStyle == .emphasis ? .blue : .primary))
-        }
-    }
-}
 
 #Preview {
     NavigationStack {

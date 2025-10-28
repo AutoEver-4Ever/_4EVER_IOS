@@ -139,7 +139,7 @@ struct QuoteDetailView: View {
             }
             .padding()
         }
-        .background(Color.white)
+        .background(Color(.systemGroupedBackground))
         
         
     }

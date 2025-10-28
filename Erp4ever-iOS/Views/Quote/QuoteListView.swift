@@ -99,7 +99,7 @@ struct QuoteListView: View {
                         .padding(.bottom, 16)
                     }
                 }
-                .background(Color.white)
+                .background(Color(.systemGroupedBackground))
             }
             .navigationBarHidden(true)
         }
