@@ -19,7 +19,7 @@ struct MainAppView: View {
             NavigationStack { OrderListView() }
                 .tabItem { Label("주문", systemImage: "cart") }
 
-            NavigationStack { PurchasesListView() }
+            NavigationStack { PurchaseListView() }
                 .tabItem { Label("매입", systemImage: "list.bullet.rectangle") }
         }
     }

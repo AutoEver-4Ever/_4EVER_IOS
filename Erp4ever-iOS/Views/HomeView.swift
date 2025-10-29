@@ -121,13 +121,6 @@ struct HomeView: View {
 }
 
 
-struct OrdersListView: View {
-    var body: some View { Text("주문 관리").navigationTitle("주문 관리") }
-}
-
-struct PurchasesListView: View {
-    var body: some View { Text("매입전표").navigationTitle("매입전표") }
-}
 
 #Preview {
     MainAppView()
