@@ -149,13 +149,13 @@ struct PurchaseListView: View {
                                         Button("수금처리", action: handlePayment)
                                             .buttonStyle(.borderedProminent)
                                     }
-                                }.frame(maxWidth: .infinity)
+                                }
                             }
                             .padding()
                             .background(RoundedRectangle(cornerRadius: 10).fill(Color.white))
                             .shadow(color: .black.opacity(0.05), radius: 3, y: 1)
-                            .padding(.horizontal)
-                            .frame(maxWidth: .infinity)
+//                            .padding(.horizontal)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         
                         // 매입전표 카드 목록
@@ -201,3 +201,4 @@ struct PurchaseListView: View {
 #Preview {
     PurchaseListView()
 }
+
