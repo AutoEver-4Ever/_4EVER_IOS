@@ -21,13 +21,13 @@ struct HomeView: View {
                 title: "주문 관리",
                 systemImage: "cart",
                 color: .purple,
-                destination: AnyView(OrdersListView())
+                destination: AnyView(OrderListView())
             ),
             QuickAction(
                 title: "매입전표",
                 systemImage: "receipt",
                 color: .orange,
-                destination: AnyView(PurchasesListView())
+                destination: AnyView(PurchaseListView())
             )
         ]
     }
