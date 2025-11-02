@@ -33,7 +33,6 @@ enum PKCEGenerator {
             throw PKCEError.invalidVerifier
         }
         let digest = SHA256.hash(data: verifierData)
-        // base64url-encoded SHA256 without padding
         return Data(digest).base64URLEncodedString().replacingOccurrences(of: "=", with: "")
     }
 
