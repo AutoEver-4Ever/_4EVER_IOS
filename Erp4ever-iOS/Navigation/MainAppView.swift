@@ -21,6 +21,9 @@ struct MainAppView: View {
 
             NavigationStack { PurchaseListView() }
                 .tabItem { Label("매입", systemImage: "list.bullet.rectangle") }
+
+            NavigationStack { ProfileView() }
+            .tabItem { Label("매입", systemImage: "list.bullet.rectangle") }
         }
     }
 }
