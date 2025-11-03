@@ -32,7 +32,7 @@ final class UserService {
 
     // Gateway: GET /api/user/info
     func fetchUserInfo(accessToken: String) async throws -> GWUserInfoResponse {
-        guard let url = URL(string: APIEndpoints.GW.userInfo) else { throw UserServiceError.invalidURL }
+        guard let url = URL(string: APIEndpoints.Gateway.userInfo) else { throw UserServiceError.invalidURL }
 
         var req = URLRequest(url: url)
         req.httpMethod = "GET"
@@ -40,7 +40,7 @@ final class UserService {
         req.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
 
         if #available(iOS 14.0, *) {
-            userNetLog.info("사용자 정보 요청 -> \(APIEndpoints.GW.userInfo, privacy: .public)")
+            userNetLog.info("사용자 정보 요청 -> \(APIEndpoints.Gateway.userInfo, privacy: .public)")
         }
 
         let (data, resp) = try await URLSession.shared.data(for: req)
