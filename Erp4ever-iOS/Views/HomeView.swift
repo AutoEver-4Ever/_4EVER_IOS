@@ -2,6 +2,7 @@ import SwiftUI
 
 
 struct HomeView: View {
+    @EnvironmentObject private var session: SessionManager
     // 빠른 작업
     private var quickActions: [QuickAction] {
         [
@@ -43,22 +44,13 @@ struct HomeView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 
-                Header(title: "차량 외장재 관리")
+                Header()
                     .padding(.horizontal)
                     .padding(.top, 8)
 
                 
-                Card {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("안녕하세요!")
-                            .font(.headline)
-                            .foregroundStyle(.primary)
-                        Text("오늘도 효율적인 업무 관리를 시작해보세요.")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .padding(.horizontal)
+                UserInfoBanner(user: session.currentUser)
+                    .padding(.horizontal)
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text("빠른 작업")
@@ -124,4 +116,5 @@ struct HomeView: View {
 
 #Preview {
     MainAppView()
+        .environmentObject(SessionManager())
 }
