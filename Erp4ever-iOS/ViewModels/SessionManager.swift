@@ -23,7 +23,7 @@ final class SessionManager: ObservableObject {
             showLogin = false
         } else {
             isAuthenticated = false
-            showLogin = true
+            showLogin = false
         }
     }
     
@@ -42,6 +42,6 @@ final class SessionManager: ObservableObject {
     func logout() {
       TokenStore.shared.clear()
       isAuthenticated = false
-      showLogin = true
+      showLogin = false
     }
 }

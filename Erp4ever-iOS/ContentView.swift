@@ -22,9 +22,7 @@ struct ContentView: View {
                   if session.isAuthenticated {
                       MainAppView()
                   } else {
-                      // 간단한 자리표시자 (시트가 바로 떠도 무방)
-                      Text("로그인이 필요합니다")
-                          .opacity(0.001)
+                      LoginView()
                   }
               }
               .sheet(isPresented: $session.showLogin) {
