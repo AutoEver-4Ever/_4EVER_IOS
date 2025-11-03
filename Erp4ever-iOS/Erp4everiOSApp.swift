@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct Erp4everiOSApp: App {
+    @StateObject private var session = SessionManager()
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(session)
         }
     }
 }
