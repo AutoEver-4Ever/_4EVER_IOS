@@ -9,17 +9,21 @@ import SwiftUI
 
 
 struct Header: View {
-    let title: String
     var body: some View {
         HStack {
-            Text(title)
-                .font(.title3.weight(.semibold))
+            // 좌측 상단 로고
+            Image("Logo")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 32)
+                .accessibilityLabel("EVERP 로고")
             Spacer()
         }
         .padding(12)
         .background(.clear)
     }
 }
+
 #Preview {
-    Header(title: "차량 외장재 관리")
+    Header()
 }

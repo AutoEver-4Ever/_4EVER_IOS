@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ProfileView: View {
+    @EnvironmentObject private var session: SessionManager
     @State private var isEditing = false
     @State private var profile = Profile(
         company: CompanyInfo(
@@ -127,7 +128,9 @@ struct ProfileView: View {
                         Divider()
                         MenuRow(title: "개인정보처리방침")
                         Divider()
-                        MenuRow(title: "로그아웃", isDestructive: true)
+                        MenuRow(title: "로그아웃", isDestructive: true) {
+                            session.logout()
+                        }
                     }
                     .background(RoundedRectangle(cornerRadius: 12).fill(.white).shadow(radius: 1))
                     

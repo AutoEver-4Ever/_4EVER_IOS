@@ -21,10 +21,14 @@ struct MainAppView: View {
 
             NavigationStack { PurchaseListView() }
                 .tabItem { Label("매입", systemImage: "list.bullet.rectangle") }
+
+            NavigationStack { ProfileView() }
+                .tabItem { Label("프로필", systemImage: "person.crop.circle") }
         }
     }
 }
 
 #Preview {
     MainAppView()
+        .environmentObject(SessionManager())
 }
