@@ -2,13 +2,11 @@
 //  APIEndpoints.swift
 //  Erp4ever-iOS
 //
-//  Centralized API base URLs and paths per environment.
 //
 
 import Foundation
 
 enum APIEndpoints {
-    // Environment-specific bases
     private static var authBase: String {
         #if DEBUG
         return "http://localhost:8081"
@@ -32,9 +30,29 @@ enum APIEndpoints {
         static var logout: String { base + "/logout" }
     }
 
-    enum GW {
+    enum Gateway {
         static var base: String { APIEndpoints.gwBase }
+        // 사용자 정보 조회
         static var userInfo: String { base + "/api/user/info" }
+        
+        // 매출 전표
+        // 목록 조회
+        static var accounReceivable: String { base + "/api/business/fcm/invoice/ar" }
+        
+        // 상세 조회
+        static var accounReceivableDetail: String { base + "/api/business/fcm/invoice/ar/{invoiceId}" }
+        
+        // 미수 처리 완료
+        static var accountReceivableComplete: String { base + "/api/busniess/fcm/invoice/ar/{invoiceId}/receivable/complete"}
+        
+        // 매입 전표
+        // 목록 조회
+        static var accountPayable: String { base + "/api/business/fcm/invoice/ap" }
+        // 상세 조회
+        static var accountPayableDetail: String { base + "/api/business/fcm/invoice/ap/{invoiceId}" }
+        
+        // 미수 처리 요청
+        static var accountPayableRequest: String { base + "/api/business/fcm/invoice/ap/{invoiceId}/receivable/request"}
     }
 }
 
