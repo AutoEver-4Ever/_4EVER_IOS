@@ -22,6 +22,7 @@ struct WebView: UIViewRepresentable {
         
         let webView = WKWebView(frame: .zero, configuration: webConfiguration)
         webView.navigationDelegate = context.coordinator
+        webView.allowsBackForwardNavigationGestures = true
         webView.load(request)
         return webView
     }
@@ -38,7 +39,9 @@ struct WebView: UIViewRepresentable {
     final class Coordinator: NSObject, WKNavigationDelegate {
         private let parent: WebView
         
-        init(_ parent: WebView) { self.parent = parent }
+        init(_ parent: WebView) {
+            self.parent = parent
+        }
         
         func webView(
             _ webView: WKWebView,
@@ -72,5 +75,3 @@ struct WebView: UIViewRepresentable {
         }
     }
 }
-
-
