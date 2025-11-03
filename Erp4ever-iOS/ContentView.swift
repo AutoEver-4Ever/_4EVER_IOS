@@ -11,8 +11,8 @@ struct ContentView: View {
     @EnvironmentObject private var session: SessionManager
     
     private let config = AuthConfig(
-              authorizationEndpoint: "https://auth.everp.co.kr/oauth2/authorize",
-              tokenEndpoint: "https://auth.everp.co.kr/oauth2/token",
+              authorizationEndpoint: APIEndpoints.Auth.authorizationEndpoint,
+              tokenEndpoint: APIEndpoints.Auth.tokenEndpoint,
               clientID: "everp-ios",
               redirectUri: "everp-ios://callback",
               scopes: ["erp.user.profile", "offline_access"]
