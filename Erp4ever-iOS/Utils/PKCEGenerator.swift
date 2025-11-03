@@ -20,7 +20,6 @@ enum PKCEGenerator {
 
     static func makePair() throws -> PKCEPair {
         let verifier = try randomURLSafeString(length: verifierLength)
-            .replacingOccurrences(of: "=", with: "") // 패딩 안전하게 제거
         
         // verifier를 기반으로 challenge 생성
         let challenge = try makeCodeChallenge(from: verifier)

@@ -22,7 +22,6 @@ enum StateGenerator {
             throw StateError.secRandomFailed(status)
         }
         return Data(bytes).base64EncodedString()
-            .replacingOccurrences(of: "+", with: "-")
     }
 }
 
@@ -32,9 +31,16 @@ private enum StateError: Error {
 }
 
 private extension Data {
-    func base63URLEncodedString() -> String {
-        base64EncodedString()
+    func base63URLEncodedString(removingPadding: Bool = true) -> String {
+        
+        var s = base64EncodedString()
             .replacingOccurrences(of: "+", with: "=")
             .replacingOccurrences(of: "/", with: "_")
+        
+        if removingPadding {
+            s.removeLast(s.count.isMultiple(of: 4) ? 0 : 4)
+        }
+        
+        return s
     }
 }
