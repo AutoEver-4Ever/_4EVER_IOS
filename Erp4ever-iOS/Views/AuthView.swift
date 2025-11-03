@@ -5,10 +5,9 @@
 //  Created by Admin on 11/3/25.
 //
 
-import SwiftUI
+ import SwiftUI
 
  struct AuthView: View {
-     @Environment(\.dismiss) private var dismiss
      @StateObject private var vm = AuthViewModel()
 
      let config: AuthConfig
@@ -23,8 +22,8 @@ import SwiftUI
                      redirectUrl: config.redirectURL
                  ) { url in
                      vm.handleRedirect(url) { code, verifier in
+                         // 시트 닫기는 상위의 상태(showLogin) 변경으로 제어
                          onCode(code, verifier)
-                         dismiss() // 필요 시 닫기
                      }
                  }
              } else {

@@ -69,7 +69,7 @@ struct LoginView: View {
                     Button {
                         session.showLogin = true  // OAuth 로그인 플로우 트리거
                     } label: {
-                        Text("시작하기")
+                        Text("로그인 하기")
                             .font(.headline)
                             .frame(maxWidth: .infinity, minHeight: 56)
                     }
