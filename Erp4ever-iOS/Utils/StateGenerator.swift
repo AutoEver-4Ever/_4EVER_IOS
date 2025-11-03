@@ -21,7 +21,8 @@ enum StateGenerator {
         guard status == errSecSuccess else {    // 난수 생성 실패시 에러 발생
             throw StateError.secRandomFailed(status)
         }
-        return Data(bytes).base64EncodedString()
+        // URL-safe Base64 (RFC 4648)로 인코딩하여 '+'가 공백으로 변환되는 문제 방지
+        return Data(bytes).base64URLEncodedString(removingPadding: true)
     }
 }
 
@@ -31,16 +32,14 @@ private enum StateError: Error {
 }
 
 private extension Data {
-    func base63URLEncodedString(removingPadding: Bool = true) -> String {
-        
+    // Base64URL encoding: '+' -> '-', '/' -> '_', '=' padding 제거
+    func base64URLEncodedString(removingPadding: Bool = true) -> String {
         var s = base64EncodedString()
-            .replacingOccurrences(of: "+", with: "=")
+            .replacingOccurrences(of: "+", with: "-")
             .replacingOccurrences(of: "/", with: "_")
-        
         if removingPadding {
-            s.removeLast(s.count.isMultiple(of: 4) ? 0 : 4)
+            s = s.replacingOccurrences(of: "=", with: "")
         }
-        
         return s
     }
 }
