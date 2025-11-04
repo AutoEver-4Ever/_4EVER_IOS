@@ -57,6 +57,10 @@ final class UserService {
         do {
             let decoded = try JSONDecoder().decode(APIResponse<UserInfoResponseDto>.self, from: data)
             guard let info = decoded.data else { throw UserServiceError.decode }
+            
+            userNetLog.info("[INFO] 사용자 정보 조회 성공")
+            userNetLog.info("[INFO] 사용자 정보: userId: \(info.userId), userName: \(info.userName), loginEmail: \(info.loginEmail), userRole: \(info.userRole), userType: \(info.userType)")
+            
             return info
         } catch {
             throw UserServiceError.decode
