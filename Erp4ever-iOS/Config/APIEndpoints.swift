@@ -8,19 +8,11 @@ import Foundation
 
 enum APIEndpoints {
     private static var authBase: String {
-        #if DEBUG
-        return "http://localhost:8081"
-        #else
         return "https://auth.everp.co.kr"
-        #endif
     }
 
     private static var gwBase: String {
-        #if DEBUG
-        return "http://localhost:8080"
-        #else
         return "https://api.everp.co.kr"
-        #endif
     }
 
     enum Auth {
@@ -37,13 +29,13 @@ enum APIEndpoints {
         
         // 매출 전표
         // 목록 조회
-        static var accounReceivable: String { base + "/api/business/fcm/invoice/ar" }
+        static var accountReceivable: String { base + "/api/business/fcm/invoice/ar" }
         
         // 상세 조회
-        static var accounReceivableDetail: String { base + "/api/business/fcm/invoice/ar/{invoiceId}" }
+        static var accountReceivableDetail: String { base + "/api/business/fcm/invoice/ar/{invoiceId}" }
         
         // 미수 처리 완료
-        static var accountReceivableComplete: String { base + "/api/busniess/fcm/invoice/ar/{invoiceId}/receivable/complete"}
+        static var accountReceivableComplete: String { base + "/api/business/fcm/invoice/ar/{invoiceId}/receivable/complete"}
         
         // 매입 전표
         // 목록 조회
@@ -55,4 +47,3 @@ enum APIEndpoints {
         static var accountPayableRequest: String { base + "/api/business/fcm/invoice/ap/{invoiceId}/receivable/request"}
     }
 }
-
