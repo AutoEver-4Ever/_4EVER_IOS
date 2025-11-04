@@ -31,7 +31,7 @@ final class UserService {
     private init() {}
 
     // Gateway: GET /api/user/info
-    func fetchUserInfo(accessToken: String) async throws -> GWUserInfoResponse {
+    func fetchUserInfo(accessToken: String) async throws -> UserInfoResponseDto {
         guard let url = URL(string: APIEndpoints.Gateway.userInfo) else { throw UserServiceError.invalidURL }
 
         var req = URLRequest(url: url)
@@ -55,7 +55,7 @@ final class UserService {
         }
 
         do {
-            let decoded = try JSONDecoder().decode(APIResponse<GWUserInfoResponse>.self, from: data)
+            let decoded = try JSONDecoder().decode(APIResponse<UserInfoResponseDto>.self, from: data)
             guard let info = decoded.data else { throw UserServiceError.decode }
             return info
         } catch {
@@ -72,7 +72,7 @@ struct APIResponse<T: Decodable>: Decodable {
     let data: T?
 }
 
-struct GWUserInfoResponse: Decodable {
+struct UserInfoResponseDto: Decodable {
     let userId: String
     let userName: String
     let loginEmail: String
