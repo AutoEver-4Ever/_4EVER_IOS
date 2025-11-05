@@ -16,8 +16,8 @@ struct MainAppView: View {
             NavigationStack { QuoteListView() }
                 .tabItem { Label("견적", systemImage: "doc.text") }
 
-            NavigationStack { OrderListView() }
-                .tabItem { Label("주문", systemImage: "cart") }
+            NavigationStack { PurchaseOrderListView() }
+                .tabItem { Label("발주서", systemImage: "doc.plaintext") }
 
             NavigationStack { PurchaseInvoiceListView() }
                 .tabItem { Label("매입 전표", systemImage: "list.bullet.rectangle") }

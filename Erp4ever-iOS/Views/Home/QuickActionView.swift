@@ -65,13 +65,13 @@ struct QuickActionView: View {
         case "CUSTOMER":
             return [
                 QuickAction(title: "견적 관리", systemImage: "doc.text.magnifyingglass", color: .green, destination: AnyView(QuoteListView())),
-                QuickAction(title: "전표 관리", systemImage: "receipt", color: .orange, destination: AnyView(OrderListView()))
+                QuickAction(title: "전표 관리", systemImage: "receipt", color: .orange, destination: AnyView(PurchaseInvoiceListView()))
             ]
             
         case "SUPPLIER":
             return [
-                QuickAction(title: "주문 관리", systemImage: "cart", color: .green, destination: AnyView(OrderListView())),
-                QuickAction(title: "전표 관리", systemImage: "receipt", color: .orange, destination: AnyView(PurchaseListView()))
+                QuickAction(title: "발주서 관리", systemImage: "doc.plaintext", color: .green, destination: AnyView(PurchaseOrderListView())),
+                QuickAction(title: "전표 관리", systemImage: "receipt", color: .orange, destination: AnyView(PurchaseInvoiceListView()))
             ]
             
         default:

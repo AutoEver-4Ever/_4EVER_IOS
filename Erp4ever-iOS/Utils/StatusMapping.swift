@@ -26,6 +26,10 @@ func invoiceStatusLabel(from code: String) -> String {
     case "CONFIRMED": return "확정"
     case "PENDING": return "대기"
     case "PARTIAL": return "부분"
+    case "APPROVAL": return "승인"
+    case "REJECTED": return "반려"
+    case "DELIVERING": return "배송중"
+    case "DELIVERED": return "배송완료"
     case "CANCELED", "CANCELLED": return "취소"
     default: return "대기"
     }
