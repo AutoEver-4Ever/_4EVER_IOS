@@ -38,20 +38,7 @@ struct SearchGlassBar: View {
             }
         }
         .padding(12)
-        .background(
-            Group {
-                if #available(iOS 15.0, *) {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous).fill(.ultraThinMaterial)
-                } else {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Color.white.opacity(0.6))
-                }
-            }
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(Color.white.opacity(0.3), lineWidth: 0.8)
-        )
-        .shadow(color: Color.black.opacity(0.08), radius: 10, y: 4)
+        .glassBackground(shape: .rounded(14))
     }
 }
 
@@ -77,4 +64,3 @@ struct StatefulPreviewWrapper<Value, Content: View>: View {
 
     var body: some View { content($value1, $value2) }
 }
-

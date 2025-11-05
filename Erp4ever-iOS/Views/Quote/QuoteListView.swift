@@ -47,7 +47,7 @@ struct QuoteListView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                HeaderBar(
+                QuoteHeaderBar(
                     isSearchMode: $isSearchMode,
                     searchTerm: $searchTerm,
                     searchType: $searchType,
@@ -78,61 +78,16 @@ struct QuoteListView: View {
                 // 리스트 또는 타입 선택 프롬프트
                 ScrollView {
                     if isSearchMode && showTypePrompt {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("견적번호, 고객사, 담당자로 찾아보세요.")
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(.secondary)
-                            HStack(spacing: 8) {
-                                let typeOptions: [(String, String)] = [("견적번호", "quotationNumber"), ("고객명", "customerName"), ("담당자", "managerName")]
-                                ForEach(typeOptions, id: \.1) { label, value in
-                                    Button(action: {
-                                        searchType = value
-                                    }) {
-                                        Text(label)
-                                            .font(.caption.weight(.semibold))
-                                            .padding(.horizontal, 10)
-                                            .padding(.vertical, 8)
-                                            .background(
-                                                RoundedRectangle(cornerRadius: 10)
-                                                    .fill(Color(.systemBackground))
-                                                    .overlay(
-                                                        RoundedRectangle(cornerRadius: 10)
-                                                            .stroke(Color.gray.opacity(0.2))
-                                                    )
-                                            )
-                                    }
-                                    .buttonStyle(.plain)
-                                }
-                            }
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 12)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        QuoteTypePromptView(selectedType: $searchType)
                     }
-                    if vm.isLoading && vm.items.isEmpty {
-                        ProgressView().padding(.top, 40)
-                    } else if let err = vm.error, vm.items.isEmpty {
-                        ErrorStateCard(title: "견적 목록을 불러오지 못했습니다.", message: err) { vm.loadInitial() }
-                        .padding(.horizontal)
-                        .padding(.top, 40)
-                    } else if vm.items.isEmpty && !(isSearchMode && showTypePrompt) {
-                        EmptyStateCard(message: "목록이 비어 있습니다.")
-                        .padding(.top, 60)
-                    } else {
-                        LazyVStack(spacing: 10) {
-                            ForEach(Array(vm.items.enumerated()), id: \.offset) { idx, item in
-                                NavigationLink(destination: QuoteDetailView(id: item.quotationNumber)) {
-                                    QuotationListItemCard(item: item)
-                                }
-                                .onAppear {
-                                    if idx == vm.items.count - 1 { vm.loadNextPage() }
-                                }
-                            }
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 20)
-                        .padding(.bottom, 16)
-                        if vm.isLoading { ProgressView().padding(.bottom, 16) }
+                    if !(isSearchMode && showTypePrompt) {
+                        QuoteListSection(
+                            items: vm.items,
+                            isLoading: vm.isLoading,
+                            error: vm.error,
+                            onRetry: { vm.loadInitial() },
+                            onReachEnd: { vm.loadNextPage() }
+                        )
                     }
                 }
                 .background(Color(.systemGroupedBackground))
@@ -146,6 +101,7 @@ struct QuoteListView: View {
     }
 }
 
+// Moved to Views/Quote/components/QuoteHeaderBar.swift
 private struct HeaderBar: View {
     @Binding var isSearchMode: Bool
     @Binding var searchTerm: String
@@ -254,7 +210,7 @@ private struct HeaderBar: View {
             } else {
                 Text("견적 관리")
                     .font(.title.bold())
-                    .padding(.bottom, 16)
+                    .padding(.bottom, 20)
                 Spacer()
                 Button(action: {
                     withAnimation(.spring()) {

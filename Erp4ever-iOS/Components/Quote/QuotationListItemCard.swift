@@ -10,16 +10,6 @@ import SwiftUI
 struct QuotationListItemCard: View {
     let item: QuotationListItem
 
-    private func mapStatusLabel(_ code: String) -> String {
-        switch code.uppercased() {
-        case "REVIEW": return "검토중"
-        case "APPROVAL": return "승인됨"
-        case "REJECTED": return "거절됨"
-        case "PENDING": return "대기"
-        default: return "대기"
-        }
-    }
-
     var body: some View {
         Card {
             VStack(alignment: .leading, spacing: 8) {
@@ -28,7 +18,7 @@ struct QuotationListItemCard: View {
                         .font(.subheadline.bold())
                         .foregroundColor(.blue)
                     Spacer()
-                    StatusLabel(statusCode: mapStatusLabel(item.statusCode))
+                    StatusLabel(statusCode: quoteStatusLabel(from: item.statusCode))
                 }
                 Group {
                     HStack { Text("고객명").foregroundColor(.secondary); Spacer(); Text(item.customerName) }
@@ -69,4 +59,3 @@ struct QuotationListItemCard: View {
     .padding()
     .background(Color(.systemGroupedBackground))
 }
-
