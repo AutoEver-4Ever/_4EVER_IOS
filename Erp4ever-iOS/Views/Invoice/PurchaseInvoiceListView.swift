@@ -10,6 +10,10 @@ import SwiftUI
 struct PurchaseInvoiceListView: View {
     @StateObject private var vm = PurchaseInvoiceListViewModel()
     @State private var company: String = ""
+    @State private var isSearchMode: Bool = false
+    @State private var showDateSheet: Bool = false
+    @State private var startDate: Date? = nil
+    @State private var endDate: Date? = nil
 
     private func formatKRW(_ value: Decimal) -> String {
         let number = NSDecimalNumber(decimal: value)
@@ -20,25 +24,36 @@ struct PurchaseInvoiceListView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                HStack {
-                    Text("매입 전표")
-                        .font(.title2.bold())
+                InvoiceHeaderBar(isSearchMode: $isSearchMode, searchText: $company) { text in
+                    vm.applyCompany(text)
+                }
+
+                // 기간 필터 바
+                HStack(spacing: 8) {
+                    Button {
+                        showDateSheet = true
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "calendar")
+                            Text(dateRangeLabel())
+                                .font(.caption)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 8)
+                        .background(RoundedRectangle(cornerRadius: 10).fill(Color.white))
+                        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.gray.opacity(0.2)))
+                    }
+                    .buttonStyle(.plain)
+
+                    if startDate != nil || endDate != nil {
+                        Button("지우기") {
+                            startDate = nil; endDate = nil
+                            vm.applyDateRange(start: nil, end: nil)
+                        }
+                        .font(.caption)
+                    }
                     Spacer()
                 }
-                .padding()
-
-                // 간단 검색 (거래처명)
-                HStack(spacing: 8) {
-                    Image(systemName: "magnifyingglass").foregroundColor(.secondary)
-                    TextField("거래처명으로 검색", text: $company)
-                        .textFieldStyle(PlainTextFieldStyle())
-                        .onChange(of: company) { _, newValue in vm.applyCompany(newValue) }
-                }
-                .padding(12)
-                .background(
-                    RoundedRectangle(cornerRadius: 12).fill(Color.white)
-                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.2)))
-                )
                 .padding(.horizontal)
                 .padding(.bottom, 8)
 
@@ -63,7 +78,7 @@ struct PurchaseInvoiceListView: View {
                                                     .font(.subheadline.bold())
                                                     .foregroundColor(.blue)
                                                 Spacer()
-                                                StatusLabel(statusCode: item.statusCode)
+                                                StatusLabel(statusCode: invoiceStatusLabel(from: item.statusCode))
                                             }
                                             Group {
                                                 HStack { Text("거래처").foregroundColor(.secondary); Spacer(); Text(item.supply.supplierName) }
@@ -85,13 +100,65 @@ struct PurchaseInvoiceListView: View {
                     }
                 }
                 .background(Color(.systemGroupedBackground))
+                .sheet(isPresented: $showDateSheet) {
+                    DateRangeSheet(
+                        startDate: $startDate,
+                        endDate: $endDate,
+                        onApply: {
+                            vm.applyDateRange(start: startDate.map(formatDate), end: endDate.map(formatDate))
+                            showDateSheet = false
+                        },
+                        onCancel: { showDateSheet = false }
+                    )
+                }
             }
             .navigationBarHidden(true)
             .background(Color(.systemGroupedBackground))
             .onAppear { if vm.items.isEmpty { vm.loadInitial() } }
         }
     }
+
+    private func formatDate(_ d: Date) -> String {
+        let f = DateFormatter(); f.dateFormat = "yyyy-MM-dd"; f.locale = .init(identifier: "ko_KR")
+        return f.string(from: d)
+    }
+
+    private func dateRangeLabel() -> String {
+        switch (startDate, endDate) {
+        case (nil, nil): return "전체 기간"
+        case let (s?, nil): return "\(formatDate(s)) ~"
+        case let (nil, e?): return "~ \(formatDate(e))"
+        case let (s?, e?): return "\(formatDate(s)) ~ \(formatDate(e))"
+        }
+    }
 }
 
 #Preview { PurchaseInvoiceListView() }
 
+// MARK: - Date Range Sheet
+private struct DateRangeSheet: View {
+    @Binding var startDate: Date?
+    @Binding var endDate: Date?
+    var onApply: () -> Void
+    var onCancel: () -> Void
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section(title: "기간 선택") {
+                    DatePicker(selection: Binding(get: { startDate ?? Date() }, set: { startDate = $0 }), displayedComponents: .date) {
+                        Text("시작일")
+                    }
+                    DatePicker(selection: Binding(get: { endDate ?? Date() }, set: { endDate = $0 }), displayedComponents: .date) {
+                        Text("종료일")
+                    }
+                }
+            }
+            .navigationTitle("기간 필터")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("취소", action: onCancel) }
+                ToolbarItem(placement: .confirmationAction) { Button("적용", action: onApply) }
+            }
+        }
+    }
+}

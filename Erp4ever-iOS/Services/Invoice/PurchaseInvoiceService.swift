@@ -45,7 +45,7 @@ final class PurchaseInvoiceService {
         req.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
 
         if #available(iOS 14.0, *) {
-            invoiceLog.info("전표 목록 요청 -> \(url.absoluteString, privacy: .public)")
+            invoiceLog.info("[INFO]전표 목록 요청: \(url.absoluteString, privacy: .public)")
         }
 
         let (data, resp) = try await URLSession.shared.data(for: req)

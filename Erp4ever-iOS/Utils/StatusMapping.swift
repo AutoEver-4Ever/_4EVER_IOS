@@ -17,3 +17,16 @@ func quoteStatusLabel(from code: String) -> String {
     }
 }
 
+func invoiceStatusLabel(from code: String) -> String {
+    switch code.uppercased() {
+    case "ISSUED": return "발행"
+    case "PAID": return "완료"
+    case "OVERDUE": return "연체"
+    case "REQUESTED": return "요청"
+    case "CONFIRMED": return "확정"
+    case "PENDING": return "대기"
+    case "PARTIAL": return "부분"
+    case "CANCELED", "CANCELLED": return "취소"
+    default: return "대기"
+    }
+}

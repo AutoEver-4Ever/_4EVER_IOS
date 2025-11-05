@@ -44,6 +44,12 @@ final class PurchaseInvoiceListViewModel: ObservableObject {
         }
     }
 
+    func applyDateRange(start: String?, end: String?) {
+        query.startDate = start
+        query.endDate = end
+        loadInitial()
+    }
+
     private func fetch(replace: Bool) {
         loadingTask?.cancel()
         loadingTask = Task { [weak self] in
@@ -75,4 +81,3 @@ final class PurchaseInvoiceListViewModel: ObservableObject {
         }
     }
 }
-

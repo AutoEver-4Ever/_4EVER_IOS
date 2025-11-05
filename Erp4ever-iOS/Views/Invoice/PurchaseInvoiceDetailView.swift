@@ -31,7 +31,7 @@ struct PurchaseInvoiceDetailView: View {
                             Text(d.invoiceNumber)
                                 .font(.title3.weight(.semibold))
                             Spacer()
-                            StatusLabel(statusCode: d.statusCode)
+                            StatusLabel(statusCode: invoiceStatusLabel(from: d.statusCode))
                         }
                         .padding(.bottom, 6)
 
@@ -119,4 +119,3 @@ struct PurchaseInvoiceDetailView: View {
     vm.detail = mock
     return PurchaseInvoiceDetailView(id: mock.invoiceId)
 }
-
