@@ -8,113 +8,133 @@
 import SwiftUI
 
 struct QuoteListView: View {
+    @StateObject private var vm: QuoteListViewModel
     @State private var searchTerm: String = ""
-    @State private var quotes: [Quotes] = [
-        Quotes(id: "Q2024-001", customerName: "현대자동차", manager: "김철수", quoteDate: "2024-01-15", deliveryDate: "2024-02-15", amount: 15000000, status: "검토중"),
-        Quotes(id: "Q2024-002", customerName: "기아자동차", manager: "이영희", quoteDate: "2024-01-13", deliveryDate: "2024-02-10", amount: 8500000, status: "승인됨"),
-        Quotes(id: "Q2024-003", customerName: "쌍용자동차", manager: "박민수", quoteDate: "2024-01-10", deliveryDate: "2024-02-05", amount: 12000000, status: "거절됨")
-    ]
-    
-    // 필터링
-    private var filteredQuotes: [Quotes] {
-        if searchTerm.isEmpty {
-            return quotes
-        }
-        return quotes.filter { quote in
-            quote.customerName.localizedCaseInsensitiveContains(searchTerm) ||
-            quote.manager.localizedCaseInsensitiveContains(searchTerm) ||
-            quote.id.localizedCaseInsensitiveContains(searchTerm)
+    @State private var statusSelection: String = "ALL" // ALL, PENDING, REVIEW
+    @State private var searchType: String = "quotationNumber" // quotationNumber | customerName | managerName
+
+    private func mapStatusLabel(_ code: String) -> String {
+        switch code.uppercased() {
+        case "REVIEW": return "검토중"
+        case "APPROVAL": return "승인됨"
+        case "REJECTED": return "거절됨"
+        case "PENDING": return "대기"
+        default: return "대기"
         }
     }
-    
-    
-    // 금액 포맷
-    private func formatAmount(_ amount: Int) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        return "\(formatter.string(from: NSNumber(value: amount)) ?? "0")원"
-    }
-    
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 // 헤더
                 HStack {
                     Text("견적 관리")
-                        .font(.title3.bold())
+                        .font(.title2.bold())
                     Spacer()
-                    NavigationLink(destination: NewQuoteView()) {
-                        Text("견적 요청")
-                            .font(.caption)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .foregroundColor(.white)
-                            .background(Color.blue)
-                            .cornerRadius(8)
-                    }
                 }
                 .padding()
-                
-                // 검색창
-                HStack(spacing: 8) {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.gray)
-                    TextField("견적번호, 고객명, 담당자로 검색", text: $searchTerm)
-                        .textFieldStyle(PlainTextFieldStyle())
+
+                // 검색 + 상태 필터
+                VStack(spacing: 8) {
+                    SearchGlassBar(text: $searchTerm, type: $searchType) { text, type in
+                        vm.applySearch(text, type: type)
+                    }
+
+                    // 간단한 상태 필터 Segmented
+                    Picker("상태", selection: $statusSelection) {
+                        Text("전체").tag("ALL")
+                        Text("대기").tag("PENDING")
+                        Text("검토중").tag("REVIEW")
+                    }
+                    .pickerStyle(.segmented)
+                    .onChange(of: statusSelection) { oldValue, newValue in
+                        vm.applyStatus(newValue == "ALL" ? nil : newValue)
+                    }
                 }
-                .padding(10)
-                .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.white)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.gray.opacity(0.3))
-                        )
-                )
                 .padding(.horizontal)
                 .padding(.bottom, 8)
-                
+
                 // 리스트
                 ScrollView {
-                    if filteredQuotes.isEmpty {
-                        VStack(spacing: 12) {
-                            Circle()
-                                .fill(Color.gray.opacity(0.1))
-                                .frame(width: 64, height: 64)
-                                .overlay(
-                                    Image(systemName: "doc.text")
-                                        .font(.system(size: 24))
-                                        .foregroundColor(.gray)
-                                )
-                            Text("검색 결과가 없습니다.")
-                                .foregroundColor(.gray)
-                        }
+                    if vm.isLoading && vm.items.isEmpty {
+                        ProgressView().padding(.top, 40)
+                    } else if let err = vm.error, vm.items.isEmpty {
+                        ErrorStateCard(title: "견적 목록을 불러오지 못했습니다.", message: err) { vm.loadInitial() }
+                        .padding(.horizontal)
+                        .padding(.top, 40)
+                    } else if vm.items.isEmpty {
+                        EmptyStateCard(message: "목록이 비어 있습니다.")
                         .padding(.top, 60)
                     } else {
                         LazyVStack(spacing: 10) {
-                            ForEach(filteredQuotes) { quote in
-                                NavigationLink(destination: QuoteDetailView(id: quote.id)) {
-                                    QuoteCard(quote: quote,
-                                              statusCode: quote.status,
-                                              formatAmount: formatAmount)
+                            ForEach(Array(vm.items.enumerated()), id: \.offset) { idx, item in
+                                NavigationLink(destination: QuoteDetailView(id: item.quotationNumber)) {
+                                    QuotationListItemCard(item: item)
+                                }
+                                .onAppear {
+                                    if idx == vm.items.count - 1 { vm.loadNextPage() }
                                 }
                             }
                         }
-                        
                         .padding(.horizontal)
                         .padding(.top, 20)
                         .padding(.bottom, 16)
+                        if vm.isLoading { ProgressView().padding(.bottom, 16) }
                     }
                 }
                 .background(Color(.systemGroupedBackground))
             }
             .navigationBarHidden(true)
             .background(Color(.systemGroupedBackground))
+            .onAppear {
+                if vm.items.isEmpty { vm.loadInitial() }
+            }
         }
     }
 }
 
-#Preview {
-    QuoteListView()
+// MARK: - 의존성
+extension QuoteListView {
+    init(vm: QuoteListViewModel = QuoteListViewModel()) {
+        _vm = StateObject(wrappedValue: vm)
+    }
 }
 
+// MARK: - Preview with mock data
+#Preview("QuoteListView – Mock Data") {
+    let mockVM = QuoteListViewModel()
+    mockVM.items = [
+        QuotationListItem(
+            quotationId: "018f2c1a-aaaa-bbbb-cccc-000000000001",
+            quotationNumber: "Q2024-001",
+            customerName: "현대자동차",
+            productId: "PROD-001",
+            dueDate: "2024-02-15",
+            quantity: 10,
+            uomName: "EA",
+            statusCode: "REVIEW"
+        ),
+        QuotationListItem(
+            quotationId: "018f2c1a-aaaa-bbbb-cccc-000000000002",
+            quotationNumber: "Q2024-002",
+            customerName: "기아자동차",
+            productId: "PROD-002",
+            dueDate: "2024-03-01",
+            quantity: 5,
+            uomName: "EA",
+            statusCode: "APPROVAL"
+        ),
+        QuotationListItem(
+            quotationId: "018f2c1a-aaaa-bbbb-cccc-000000000003",
+            quotationNumber: "Q2024-003",
+            customerName: "쌍용자동차",
+            productId: nil,
+            dueDate: "2024-02-05",
+            quantity: nil,
+            uomName: nil,
+            statusCode: "PENDING"
+        )
+    ]
+    mockVM.hasNext = false
+    return QuoteListView(vm: mockVM)
+}
