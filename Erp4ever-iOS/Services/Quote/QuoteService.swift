@@ -70,4 +70,38 @@ final class QuoteService {
             throw QuoteServiceError.decode
         }
     }
+
+    // GET /api/business/sd/quotations/{quotationId}
+    func fetchQuotationDetail(accessToken: String, quotationId: String) async throws -> QuotationDetail {
+        let endpoint = APIEndpoints.Gateway.quotationDetail.replacingOccurrences(of: "{quotationId}", with: quotationId)
+        guard let url = URL(string: endpoint) else { throw QuoteServiceError.invalidURL }
+
+        var req = URLRequest(url: url)
+        req.httpMethod = "GET"
+        req.setValue("application/json", forHTTPHeaderField: "Accept")
+        req.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+
+        if #available(iOS 14.0, *) {
+            quoteLog.info("견적 상세 요청 -> \(url.absoluteString, privacy: .public)")
+        }
+
+        let (data, resp) = try await URLSession.shared.data(for: req)
+        guard let http = resp as? HTTPURLResponse else { throw QuoteServiceError.invalidURL }
+        if http.statusCode == 401 { throw QuoteServiceError.unauthorized }
+        if !(200...299).contains(http.statusCode) {
+            let body = String(data: data, encoding: .utf8) ?? ""
+            if #available(iOS 14.0, *) {
+                quoteLog.error("견적 상세 실패 (상태 코드: \(http.statusCode, privacy: .public))\n\(body, privacy: .private(mask: .hash))")
+            }
+            throw QuoteServiceError.http(status: http.statusCode, body: body)
+        }
+
+        do {
+            let decoded = try JSONDecoder().decode(APIResponse<QuotationDetail>.self, from: data)
+            guard let detail = decoded.data else { throw QuoteServiceError.decode }
+            return detail
+        } catch {
+            throw QuoteServiceError.decode
+        }
+    }
 }

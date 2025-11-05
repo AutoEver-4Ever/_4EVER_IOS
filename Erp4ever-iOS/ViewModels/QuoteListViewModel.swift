@@ -27,6 +27,7 @@ final class QuoteListViewModel: ObservableObject {
     )
 
     private var loadingTask: Task<Void, Never>? = nil
+    private var searchDebounceTask: Task<Void, Never>? = nil
 
     deinit {
         loadingTask?.cancel()
@@ -53,7 +54,14 @@ final class QuoteListViewModel: ObservableObject {
     func applySearch(_ text: String?, type: String?) {
         query.search = (text?.isEmpty == true) ? nil : text
         query.type = (type?.isEmpty == true) ? nil : type
-        loadInitial()
+
+        // Debounce: cancel previous and schedule after 300ms
+        searchDebounceTask?.cancel()
+        searchDebounceTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            guard !Task.isCancelled, let self else { return }
+            await MainActor.run { self.loadInitial() }
+        }
     }
 
     // MARK: - Private
