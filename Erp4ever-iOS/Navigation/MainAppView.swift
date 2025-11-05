@@ -16,11 +16,15 @@ struct MainAppView: View {
             NavigationStack { QuoteListView() }
                 .tabItem { Label("견적", systemImage: "doc.text") }
 
-            NavigationStack { OrderListView() }
-                .tabItem { Label("주문", systemImage: "cart") }
+            NavigationStack { PurchaseOrderListView() }
+                .tabItem { Label("발주서", systemImage: "doc.plaintext") }
 
-            NavigationStack { PurchaseListView() }
-                .tabItem { Label("매입", systemImage: "list.bullet.rectangle") }
+            NavigationStack { PurchaseInvoiceListView() }
+                .tabItem { Label("매입 전표", systemImage: "list.bullet.rectangle") }
+
+            // 공급사용 매출 전표 탭 추가
+            NavigationStack { SupplierInvoiceListView() }
+                .tabItem { Label("매출 전표", systemImage: "doc.richtext") }
 
             NavigationStack { ProfileView() }
                 .tabItem { Label("프로필", systemImage: "person.crop.circle") }

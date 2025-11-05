@@ -2,27 +2,17 @@
 //  APIEndpoints.swift
 //  Erp4ever-iOS
 //
-//  Centralized API base URLs and paths per environment.
-//
+
 
 import Foundation
 
 enum APIEndpoints {
-    // Environment-specific bases
     private static var authBase: String {
-        #if DEBUG
-        return "http://localhost:8081"
-        #else
         return "https://auth.everp.co.kr"
-        #endif
     }
 
     private static var gwBase: String {
-        #if DEBUG
-        return "http://localhost:8080"
-        #else
         return "https://api.everp.co.kr"
-        #endif
     }
 
     enum Auth {
@@ -32,9 +22,44 @@ enum APIEndpoints {
         static var logout: String { base + "/logout" }
     }
 
-    enum GW {
+    enum Gateway {
         static var base: String { APIEndpoints.gwBase }
+        // 사용자 정보 조회
         static var userInfo: String { base + "/api/user/info" }
+        
+        // 프로필 조회(BUSINESS)
+        static var businessProfile: String { base + "/api/business/profile" }
+        
+        // MARK: 견적 조회
+        // 견적서 목록 조회
+        static var quotations: String { base + "/api/business/sd/quotations" }
+        
+        // 견적서 상세 조회
+        static var quotationDetail: String { base + "/api/business/sd/quotations/{quotationId}"}
+        
+        // MARK: 매출 전표
+        // 목록 조회
+        static var accountReceivable: String { base + "/api/business/fcm/invoice/ar" }
+        
+        // 상세 조회
+        static var accountReceivableDetail: String { base + "/api/business/fcm/invoice/ar/{invoiceId}" }
+        
+        // 미수 처리 완료
+        static var accountReceivableComplete: String { base + "/api/business/fcm/invoice/ar/{invoiceId}/receivable/complete"}
+        
+        // MARK: 매입 전표
+        // 목록 조회
+        static var accountPayable: String { base + "/api/business/fcm/invoice/ap" }
+        // 상세 조회
+        static var accountPayableDetail: String { base + "/api/business/fcm/invoice/ap/{invoiceId}" }
+        
+        // 미수 처리 요청
+        static var accountPayableRequest: String { base + "/api/business/fcm/invoice/ap/{invoiceId}/receivable/request"}
+
+        // 구매관리(MM) - 발주서
+        // 발주서 목록 조회
+        static var purchaseOrders: String { base + "/api/scm-pp/mm/purchase-orders" }
+        // 발주서 상세 조회
+        static var purchaseOrderDetail: String { base + "/api/scm-pp/mm/purchase-orders/{purchaseOrderId}" }
     }
 }
-

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct UserInfoBanner: View {
-    let user: GWUserInfoResponse?
+    let user: UserInfoResponseDto?
 
     var body: some View {
         Card {
@@ -47,7 +47,7 @@ struct UserInfoBanner: View {
 
 #Preview {
     VStack(spacing: 12) {
-        UserInfoBanner(user: GWUserInfoResponse(
+        UserInfoBanner(user: UserInfoResponseDto(
             userId: "1234",
             userName: "김철수",
             loginEmail: "kim@example.com",

@@ -12,7 +12,7 @@ final class SessionManager: ObservableObject {
     
     @Published var isAuthenticated: Bool = false
     @Published var showLogin: Bool = false
-    @Published var currentUser: GWUserInfoResponse?
+    @Published var currentUser: UserInfoResponseDto?
     
     init() {
         checkTokenOnLaunch()
