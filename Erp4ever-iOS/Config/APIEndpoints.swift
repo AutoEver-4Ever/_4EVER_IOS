@@ -27,6 +27,9 @@ enum APIEndpoints {
         // 사용자 정보 조회
         static var userInfo: String { base + "/api/user/info" }
         
+        // 프로필 조회(BUSINESS)
+        static var businessProfile: String { base + "/api/business/profile" }
+        
         // MARK: 견적 조회
         // 견적서 목록 조회
         static var quotations: String { base + "/api/business/sd/quotations" }

@@ -22,6 +22,10 @@ struct MainAppView: View {
             NavigationStack { PurchaseInvoiceListView() }
                 .tabItem { Label("매입 전표", systemImage: "list.bullet.rectangle") }
 
+            // 공급사용 매출 전표 탭 추가
+            NavigationStack { SupplierInvoiceListView() }
+                .tabItem { Label("매출 전표", systemImage: "doc.richtext") }
+
             NavigationStack { ProfileView() }
                 .tabItem { Label("프로필", systemImage: "person.crop.circle") }
         }
