@@ -3,6 +3,7 @@ import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject private var session: SessionManager
+    @State private var isProfileSheetPresented = false
     
     private var userType: String? {
         session.currentUser?.userType
@@ -15,9 +16,11 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: 16) {
                 
                 // 로고
-                Header()
-                    .padding(.horizontal)
-                    .padding(.top, 8)
+                Header(
+                    userName: session.currentUser?.userName,
+                    onProfileTapped: { isProfileSheetPresented = true }
+                )
+                .padding(.top, 8)
                 
                 // 사용자 정보
                 UserInfoBanner(user: session.currentUser)
@@ -37,6 +40,15 @@ struct HomeView: View {
             .padding(.bottom, 16)
         }
         .background(Color(.systemGroupedBackground))
+        .sheet(isPresented: $isProfileSheetPresented) {
+            if #available(iOS 16.0, *) {
+                ProfileView()
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
+            } else {
+                ProfileView()
+            }
+        }
     }
 }
 

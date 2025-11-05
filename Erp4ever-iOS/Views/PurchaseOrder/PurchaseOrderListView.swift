@@ -37,44 +37,73 @@ struct PurchaseOrderListView: View {
         NavigationStack {
             VStack(spacing: 0) {
                 // 공통 헤더(리퀴드 글래스 검색)
-                InvoiceHeaderBar(isSearchMode: $isSearchMode, searchText: $keyword) { text in
+                InvoiceHeaderBar(isSearchMode: $isSearchMode, searchText: $keyword, onSearch: { text in
                     vm.applySearch(type: searchType, keyword: text)
-                }
+                }, title: "발주서")
 
                 // 상태/검색 타입/기간 필터 바
-                HStack(spacing: 8) {
+                VStack(spacing: 12) {
+                    HStack(spacing: 8) {
+                        // 검색 타입 선택(공급사명/발주서번호)
+                        Menu {
+                            Button("공급사명") {
+                                searchType = "SupplierCompanyName"
+                                if !keyword.isEmpty { vm.applySearch(type: searchType, keyword: keyword) }
+                            }
+                            Button("발주서번호") {
+                                searchType = "PurchaseOrderNumber"
+                                if !keyword.isEmpty { vm.applySearch(type: searchType, keyword: keyword) }
+                            }
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text(searchType == "SupplierCompanyName" ? "공급사명" : "발주서번호")
+                                    .font(.caption.weight(.semibold))
+                                Image(systemName: "chevron.up.chevron.down")
+                                    .font(.caption2)
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 8)
+                            .background(RoundedRectangle(cornerRadius: 10).fill(Color.white))
+                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.gray.opacity(0.2)))
+                        }
+
+                        Button {
+                            showDateSheet = true
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "calendar")
+                                Text(dateRangeLabel())
+                                    .font(.caption)
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 8)
+                            .background(RoundedRectangle(cornerRadius: 10).fill(Color.white))
+                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.gray.opacity(0.2)))
+                        }
+                        .buttonStyle(.plain)
+
+                        Spacer()
+
+                        if startDate != nil || endDate != nil {
+                            Button("지우기") {
+                                startDate = nil
+                                endDate = nil
+                                vm.applyDateRange(start: nil, end: nil)
+                            }
+                            .font(.caption)
+                        }
+                    }
+
                     Picker("상태", selection: $statusSelection) {
-                        Text("전체").tag("ALL"); Text("승인").tag("APPROVAL"); Text("대기").tag("PENDING"); Text("반려").tag("REJECTED"); Text("배송중").tag("DELIVERING"); Text("완료").tag("DELIVERED")
+                        Text("전체").tag("ALL")
+                        Text("승인").tag("APPROVAL")
+                        Text("대기").tag("PENDING")
+                        Text("반려").tag("REJECTED")
+                        Text("배송중").tag("DELIVERING")
+                        Text("완료").tag("DELIVERED")
                     }
                     .pickerStyle(.segmented)
                     .onChange(of: statusSelection) { _, newValue in vm.applyStatus(newValue) }
-
-                    // 검색 타입 선택(공급사명/발주서번호)
-                    Menu {
-                        Button("공급사명") { searchType = "SupplierCompanyName"; if !keyword.isEmpty { vm.applySearch(type: searchType, keyword: keyword) } }
-                        Button("발주서번호") { searchType = "PurchaseOrderNumber"; if !keyword.isEmpty { vm.applySearch(type: searchType, keyword: keyword) } }
-                    } label: {
-                        HStack(spacing: 4) {
-                            Text(searchType == "SupplierCompanyName" ? "공급사명" : "발주서번호").font(.caption.weight(.semibold))
-                            Image(systemName: "chevron.up.chevron.down").font(.caption2)
-                        }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 8)
-                        .background(RoundedRectangle(cornerRadius: 10).fill(Color.white))
-                        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.gray.opacity(0.2)))
-                    }
-
-                    Spacer()
-                    Button { showDateSheet = true } label: {
-                        HStack(spacing: 6) { Image(systemName: "calendar"); Text(dateRangeLabel()).font(.caption) }
-                            .padding(.horizontal, 10).padding(.vertical, 8)
-                            .background(RoundedRectangle(cornerRadius: 10).fill(Color.white))
-                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.gray.opacity(0.2)))
-                    }.buttonStyle(.plain)
-
-                    if startDate != nil || endDate != nil {
-                        Button("지우기") { startDate = nil; endDate = nil; vm.applyDateRange(start: nil, end: nil) }.font(.caption)
-                    }
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 8)

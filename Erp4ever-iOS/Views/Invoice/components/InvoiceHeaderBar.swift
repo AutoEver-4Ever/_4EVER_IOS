@@ -14,6 +14,7 @@ struct InvoiceHeaderBar: View {
     @FocusState private var focused: Bool
 
     var onSearch: (String) -> Void
+    var title: String = "매입 전표"
 
     var body: some View {
         HStack(spacing: 8) {
@@ -45,7 +46,7 @@ struct InvoiceHeaderBar: View {
                 .font(.body)
                 .tint(.blue)
             } else {
-                Text("매입 전표")
+                Text(title)
                     .font(.title2.bold())
                 Spacer()
                 Button {
@@ -65,4 +66,3 @@ struct InvoiceHeaderBar: View {
         .padding(.top)
     }
 }
-
