@@ -95,9 +95,9 @@ struct PurchaseOrderListView: View {
                                         VStack(alignment: .leading, spacing: 8) {
                                             HStack { Text(item.purchaseOrderNumber).font(.subheadline.bold()).foregroundColor(.blue); Spacer(); StatusLabel(statusCode: invoiceStatusLabel(from: item.statusCode)) }
                                             Group {
-                                                HStack { Text("공급사").foregroundColor(.secondary); Spacer(); Text(item.supplierCompanyName) }
-                                                HStack { Text("발행일").foregroundColor(.secondary); Spacer(); Text(item.issueDate) }
-                                                HStack { Text("납기일").foregroundColor(.secondary); Spacer(); Text(item.dueDate) }
+                                            HStack { Text("공급사").foregroundColor(.secondary); Spacer(); Text(item.supplierName ?? "-") }
+                                                HStack { Text("발행일").foregroundColor(.secondary); Spacer(); Text(String(item.orderDate.prefix(10))) }
+                                                HStack { Text("납기일").foregroundColor(.secondary); Spacer(); Text(String(item.dueDate.prefix(10))) }
                                                 HStack { Text("금액").foregroundColor(.secondary); Spacer(); Text(formatKRW(item.totalAmount)).foregroundColor(.blue).bold() }
                                             }.font(.footnote)
                                         }

@@ -64,9 +64,10 @@ final class PurchaseOrderService {
         }
 
         do {
-            let decoded = try JSONDecoder().decode(APIResponse<PageResponse<PurchaseOrderListItem>>.self, from: data)
-            guard let page = decoded.data else { throw PurchaseOrderServiceError.decode }
-            // [INFO] 성공 로그
+            let decoded = try JSONDecoder().decode(APIResponse<POPaged<PurchaseOrderListItem>>.self, from: data)
+            guard let po = decoded.data else { throw PurchaseOrderServiceError.decode }
+            let pageInfo = PageInfo(number: po.page.number, size: po.page.size, totalElements: po.page.totalElements, totalPages: po.page.totalPages, hasNext: po.page.hasNext)
+            let page = PageResponse(total: po.page.totalElements, content: po.content, pageInfo: pageInfo)
             if #available(iOS 14.0, *) { poLog.info("[INFO][\(http.statusCode)] 발주서 목록을 성공적으로 조회했습니다.") }
             print("[INFO][\(http.statusCode)] 발주서 목록을 성공적으로 조회했습니다.")
             return page

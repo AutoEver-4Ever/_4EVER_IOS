@@ -44,26 +44,34 @@ final class PurchaseInvoiceService {
         req.setValue("application/json", forHTTPHeaderField: "Accept")
         req.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
 
-        if #available(iOS 14.0, *) {
-            invoiceLog.info("[INFO]전표 목록 요청: \(url.absoluteString, privacy: .public)")
-        }
+        if #available(iOS 14.0, *) { invoiceLog.info("전표 목록 요청 -> \(url.absoluteString, privacy: .public)") }
 
         let (data, resp) = try await URLSession.shared.data(for: req)
         guard let http = resp as? HTTPURLResponse else { throw PurchaseInvoiceServiceError.invalidURL }
-        if http.statusCode == 401 { throw PurchaseInvoiceServiceError.unauthorized }
+        if http.statusCode == 401 {
+            if #available(iOS 14.0, *) { invoiceLog.error("[ERROR][401] 매입 전표 목록을 조회하는데 실패했습니다.") }
+            print("[ERROR][401] 매입 전표 목록을 조회하는데 실패했습니다.")
+            throw PurchaseInvoiceServiceError.unauthorized
+        }
         if !(200...299).contains(http.statusCode) {
             let body = String(data: data, encoding: .utf8) ?? ""
             if #available(iOS 14.0, *) {
                 invoiceLog.error("전표 목록 실패 (상태 코드: \(http.statusCode, privacy: .public))\n\(body, privacy: .private(mask: .hash))")
             }
+            if #available(iOS 14.0, *) { invoiceLog.error("[ERROR][\(http.statusCode)] 매입 전표 목록을 조회하는데 실패했습니다.") }
+            print("[ERROR][\(http.statusCode)] 매입 전표 목록을 조회하는데 실패했습니다.")
             throw PurchaseInvoiceServiceError.http(status: http.statusCode, body: body)
         }
 
         do {
             let decoded = try JSONDecoder().decode(APIResponse<PageResponse<PurchaseInvoiceListItem>>.self, from: data)
             guard let page = decoded.data else { throw PurchaseInvoiceServiceError.decode }
+            if #available(iOS 14.0, *) { invoiceLog.info("[INFO][\(http.statusCode)] 매입 전표 목록을 성공적으로 조회했습니다.") }
+            print("[INFO][\(http.statusCode)] 매입 전표 목록을 성공적으로 조회했습니다.")
             return page
         } catch {
+            if #available(iOS 14.0, *) { invoiceLog.error("[ERROR][500] 매입 전표 목록을 조회하는데 실패했습니다.") }
+            print("[ERROR][500] 매입 전표 목록을 조회하는데 실패했습니다.")
             throw PurchaseInvoiceServiceError.decode
         }
     }
@@ -78,28 +86,35 @@ final class PurchaseInvoiceService {
         req.setValue("application/json", forHTTPHeaderField: "Accept")
         req.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
 
-        if #available(iOS 14.0, *) {
-            invoiceLog.info("전표 상세 요청 -> \(url.absoluteString, privacy: .public)")
-        }
+        if #available(iOS 14.0, *) { invoiceLog.info("전표 상세 요청 -> \(url.absoluteString, privacy: .public)") }
 
         let (data, resp) = try await URLSession.shared.data(for: req)
         guard let http = resp as? HTTPURLResponse else { throw PurchaseInvoiceServiceError.invalidURL }
-        if http.statusCode == 401 { throw PurchaseInvoiceServiceError.unauthorized }
+        if http.statusCode == 401 {
+            if #available(iOS 14.0, *) { invoiceLog.error("[ERROR][401] 매입 전표 상세를 조회하는데 실패했습니다.") }
+            print("[ERROR][401] 매입 전표 상세를 조회하는데 실패했습니다.")
+            throw PurchaseInvoiceServiceError.unauthorized
+        }
         if !(200...299).contains(http.statusCode) {
             let body = String(data: data, encoding: .utf8) ?? ""
             if #available(iOS 14.0, *) {
                 invoiceLog.error("전표 상세 실패 (상태 코드: \(http.statusCode, privacy: .public))\n\(body, privacy: .private(mask: .hash))")
             }
+            if #available(iOS 14.0, *) { invoiceLog.error("[ERROR][\(http.statusCode)] 매입 전표 상세를 조회하는데 실패했습니다.") }
+            print("[ERROR][\(http.statusCode)] 매입 전표 상세를 조회하는데 실패했습니다.")
             throw PurchaseInvoiceServiceError.http(status: http.statusCode, body: body)
         }
 
         do {
             let decoded = try JSONDecoder().decode(APIResponse<PurchaseInvoiceDetail>.self, from: data)
             guard let detail = decoded.data else { throw PurchaseInvoiceServiceError.decode }
+            if #available(iOS 14.0, *) { invoiceLog.info("[INFO][\(http.statusCode)] 매입 전표 상세를 성공적으로 조회했습니다.") }
+            print("[INFO][\(http.statusCode)] 매입 전표 상세를 성공적으로 조회했습니다.")
             return detail
         } catch {
+            if #available(iOS 14.0, *) { invoiceLog.error("[ERROR][500] 매입 전표 상세를 조회하는데 실패했습니다.") }
+            print("[ERROR][500] 매입 전표 상세를 조회하는데 실패했습니다.")
             throw PurchaseInvoiceServiceError.decode
         }
     }
 }
-

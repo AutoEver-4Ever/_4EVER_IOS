@@ -24,13 +24,17 @@ struct PurchaseOrderDetailView: View {
                     Card {
                         HStack { Text(d.purchaseOrderNumber).font(.title3.weight(.semibold)); Spacer(); StatusLabel(statusCode: invoiceStatusLabel(from: d.statusCode)) }
                         .padding(.bottom, 6)
-                        KeyValueRow(key: "발행일", value: d.issueDate)
+                        KeyValueRow(key: "발행일", value: String(d.orderDate.prefix(10)))
                         KeyValueRow(key: "납기일", value: d.dueDate)
                         KeyValueRow(key: "총 금액", value: formatKRW(d.totalAmount), valueStyle: .emphasis)
                     }
 
                     // 공급사
-                    Card { CardTitle("공급사"); KeyValueRow(key: "명칭", value: d.supplierCompanyName); if let ref = d.referenceNumber { KeyValueRow(key: "참조번호", value: ref) } }
+                    Card {
+                        CardTitle("공급사")
+                        KeyValueRow(key: "명칭", value: d.supplierName ?? "-")
+                        if let ref = d.referenceNumber { KeyValueRow(key: "참조번호", value: ref) }
+                    }
 
                     // 품목
                     Card {
@@ -58,4 +62,3 @@ struct PurchaseOrderDetailView: View {
 }
 
 #Preview { PurchaseOrderDetailView(id: "PO-1") }
-

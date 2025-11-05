@@ -16,10 +16,11 @@ struct PurchaseOrderListItem: Decodable, Identifiable {
     // 발주서 기본 정보
     let purchaseOrderId: String
     let purchaseOrderNumber: String
-    let supplierCompanyName: String
+    let supplierName: String?
+    let itemsSummary: String?
+    let orderDate: String      // ISO-8601 문자열
+    let dueDate: String        // ISO-8601 문자열
     let totalAmount: Decimal
-    let issueDate: String      // YYYY-MM-DD
-    let dueDate: String        // YYYY-MM-DD
     let statusCode: String
 }
 
@@ -42,9 +43,13 @@ struct PurchaseOrderDetail: Decodable {
     let purchaseOrderId: String
     let purchaseOrderNumber: String
     let statusCode: String
-    let issueDate: String
+    let orderDate: String
     let dueDate: String
-    let supplierCompanyName: String
+    let supplierId: String?
+    let supplierNumber: String?
+    let supplierName: String?
+    let managerPhone: String?
+    let managerEmail: String?
     let referenceNumber: String?
     let totalAmount: Decimal
     let note: String?
@@ -80,3 +85,17 @@ struct PurchaseOrderQuery {
     }
 }
 
+// MARK: - 페이지네이션(게이트웨이 응답 전용)
+
+struct POPaged<T: Decodable>: Decodable {
+    let content: [T]
+    let page: POPage
+}
+
+struct POPage: Decodable {
+    let number: Int
+    let size: Int
+    let totalElements: Int
+    let totalPages: Int
+    let hasNext: Bool
+}
