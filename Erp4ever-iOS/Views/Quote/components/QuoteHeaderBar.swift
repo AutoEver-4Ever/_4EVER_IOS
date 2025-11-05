@@ -125,5 +125,6 @@ struct QuoteHeaderBar: View {
         }
         .padding(.horizontal)
         .padding(.top)
+        .padding(.bottom, 18)
     }
 }
