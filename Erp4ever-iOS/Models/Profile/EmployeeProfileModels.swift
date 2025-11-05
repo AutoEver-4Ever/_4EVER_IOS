@@ -9,14 +9,14 @@
 import Foundation
 
 struct EmployeeProfile: Decodable {
-    let name: String
-    let employeeNumber: String
-    let department: String
-    let position: String
-    let hireDate: String
-    let serviceYears: String
-    let email: String
-    let phoneNumber: String
-    let address: String
+    // 서버 DTO(EmployeeProfileDto) 필드. 일부 값은 null 일 수 있어 Optional 로 선언
+    let name: String?
+    let employeeNumber: String?
+    let department: String?
+    let position: String?
+    let hireDate: String?
+    let serviceYears: String?
+    let email: String?
+    let phoneNumber: String?
+    let address: String?
 }
-

@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import Combine
+import Combine
 
 final class ProfileViewModel: ObservableObject {
     @Published var profile: EmployeeProfile? = nil
@@ -39,4 +41,3 @@ final class ProfileViewModel: ObservableObject {
         }
     }
 }
-
