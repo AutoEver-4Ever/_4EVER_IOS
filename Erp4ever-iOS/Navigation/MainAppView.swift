@@ -19,8 +19,8 @@ struct MainAppView: View {
             NavigationStack { OrderListView() }
                 .tabItem { Label("주문", systemImage: "cart") }
 
-            NavigationStack { PurchaseListView() }
-                .tabItem { Label("매입", systemImage: "list.bullet.rectangle") }
+            NavigationStack { PurchaseInvoiceListView() }
+                .tabItem { Label("매입 전표", systemImage: "list.bullet.rectangle") }
 
             NavigationStack { ProfileView() }
                 .tabItem { Label("프로필", systemImage: "person.crop.circle") }
