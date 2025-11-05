@@ -2,7 +2,7 @@
 //  APIEndpoints.swift
 //  Erp4ever-iOS
 //
-//
+
 
 import Foundation
 
@@ -52,5 +52,11 @@ enum APIEndpoints {
         
         // 미수 처리 요청
         static var accountPayableRequest: String { base + "/api/business/fcm/invoice/ap/{invoiceId}/receivable/request"}
+
+        // 구매관리(MM) - 발주서
+        // 발주서 목록 조회
+        static var purchaseOrders: String { base + "/api/scm-pp/mm/purchase-orders" }
+        // 발주서 상세 조회
+        static var purchaseOrderDetail: String { base + "/api/scm-pp/mm/purchase-orders/{purchaseOrderId}" }
     }
 }
