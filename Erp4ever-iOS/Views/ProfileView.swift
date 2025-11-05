@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @EnvironmentObject private var session: SessionManager
+    @StateObject private var vm = ProfileViewModel()
     @State private var isEditing = false
     @State private var profile = Profile(
         company: CompanyInfo(
@@ -56,9 +57,9 @@ struct ProfileView: View {
                                 .font(.system(size: 36))
                                 .foregroundColor(.blue)
                         }
-                        Text(profile.user.name)
+                        Text(vm.profile?.name ?? profile.user.name)
                             .font(.title3.bold())
-                        Text("\(profile.user.department) · \(profile.user.position)")
+                        Text("\(vm.profile?.department ?? profile.user.department) · \(vm.profile?.position ?? profile.user.position)")
                             .font(.subheadline)
                             .foregroundColor(.gray)
                     }
@@ -85,11 +86,12 @@ struct ProfileView: View {
                         Text("개인 정보")
                             .font(.headline)
                         VStack(spacing: 10) {
-                            CustomInput(label: "이름", text: $profile.user.name, editable: isEditing)
-                            CustomInput(label: "이메일", text: $profile.user.email, editable: isEditing, keyboard: .emailAddress)
-                            CustomInput(label: "휴대폰 번호", text: $profile.user.phone, editable: isEditing)
-                            CustomInput(label: "부서", text: $profile.user.department, editable: isEditing)
-                            CustomInput(label: "직급", text: $profile.user.position, editable: isEditing)
+                            CustomInput(label: "이름", text: Binding(get: { vm.profile?.name ?? profile.user.name }, set: { profile.user.name = $0 }), editable: isEditing)
+                            CustomInput(label: "이메일", text: Binding(get: { vm.profile?.email ?? profile.user.email }, set: { profile.user.email = $0 }), editable: isEditing, keyboard: .emailAddress)
+                            CustomInput(label: "휴대폰 번호", text: Binding(get: { vm.profile?.phoneNumber ?? profile.user.phone }, set: { profile.user.phone = $0 }), editable: isEditing)
+                            CustomInput(label: "부서", text: Binding(get: { vm.profile?.department ?? profile.user.department }, set: { profile.user.department = $0 }), editable: isEditing)
+                            CustomInput(label: "직급", text: Binding(get: { vm.profile?.position ?? profile.user.position }, set: { profile.user.position = $0 }), editable: isEditing)
+                            // 참고: 입사일/근속기간/주소 등은 추가 섹션으로 확장 가능
                         }
                     }
                     .padding()
@@ -150,6 +152,7 @@ struct ProfileView: View {
                 Button("확인", role: .cancel) { }
             }
         }
+        .onAppear { if vm.profile == nil { vm.load() } }
     }
     
    
