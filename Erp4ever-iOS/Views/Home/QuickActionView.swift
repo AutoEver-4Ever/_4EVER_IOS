@@ -71,7 +71,7 @@ struct QuickActionView: View {
         case "SUPPLIER":
             return [
                 QuickAction(title: "발주서 관리", systemImage: "doc.plaintext", color: .green, destination: AnyView(PurchaseOrderListView())),
-                QuickAction(title: "전표 관리", systemImage: "receipt", color: .orange, destination: AnyView(PurchaseInvoiceListView()))
+                QuickAction(title: "매출 전표", systemImage: "receipt", color: .orange, destination: AnyView(SupplierInvoiceListView()))
             ]
             
         default:
