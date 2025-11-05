@@ -27,7 +27,14 @@ enum APIEndpoints {
         // 사용자 정보 조회
         static var userInfo: String { base + "/api/user/info" }
         
-        // 매출 전표
+        // MARK: 견적 조회
+        // 견적서 목록 조회
+        static var quotations: String { base + "/api/business/sd/quotations" }
+        
+        // 견적서 상세 조회
+        static var quotationDetail: String { base + "/api/business/sd/quotations/{quotationId}"}
+        
+        // MARK: 매출 전표
         // 목록 조회
         static var accountReceivable: String { base + "/api/business/fcm/invoice/ar" }
         
@@ -37,7 +44,7 @@ enum APIEndpoints {
         // 미수 처리 완료
         static var accountReceivableComplete: String { base + "/api/business/fcm/invoice/ar/{invoiceId}/receivable/complete"}
         
-        // 매입 전표
+        // MARK: 매입 전표
         // 목록 조회
         static var accountPayable: String { base + "/api/business/fcm/invoice/ap" }
         // 상세 조회
