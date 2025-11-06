@@ -10,8 +10,6 @@ import SwiftUI
 
 struct SupplierInvoiceListView: View {
     @StateObject private var vm = SupplierInvoiceListViewModel()
-    @State private var company: String = ""
-    @State private var isSearchMode: Bool = false
     @State private var showDateSheet: Bool = false
     @State private var startDate: Date? = nil
     @State private var endDate: Date? = nil
@@ -26,10 +24,6 @@ struct SupplierInvoiceListView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                SupplierInvoiceHeaderBar(isSearchMode: $isSearchMode, searchText: $company) { text in
-                    vm.applyCompany(text)
-                }
-
                 // 기간 필터 바
                 HStack(spacing: 8) {
                     Button { showDateSheet = true } label: {
@@ -112,9 +106,12 @@ struct SupplierInvoiceListView: View {
                     )
                 }
             }
-            .navigationBarHidden(true)
             .background(Color(.systemGroupedBackground))
-            .onAppear { if vm.items.isEmpty { vm.loadInitial() } }
+            .navigationTitle("매출 전표")
+            .navigationBarTitleDisplayMode(.large)
+            .onAppear {
+                if vm.items.isEmpty { vm.loadInitial() }
+            }
         }
     }
 
@@ -136,4 +133,3 @@ struct SupplierInvoiceListView: View {
 }
 
 #Preview { SupplierInvoiceListView() }
-
