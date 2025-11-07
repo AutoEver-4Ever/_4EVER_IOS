@@ -16,10 +16,12 @@ struct QuoteListView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                statusFilter
+            ScrollView {
+                VStack(spacing: 0) {
+                    
+                    statusFilter
+                        .padding(.top, 8)
 
-                ScrollView {
                     QuoteListSection(
                         items: vm.items,
                         isLoading: vm.isLoading,
@@ -43,10 +45,8 @@ struct QuoteListView: View {
         .onChange(of: searchTerm) { _, _ in triggerSearch() }
         .onChange(of: searchScope) { _, _ in triggerSearch() }
         .onChange(of: isSearchPresented) { _, presented in
-            // 선택 옵션: 닫힐 때 입력 초기화 (원치 않으면 주석 처리)
             if !presented {
                 searchTerm = ""
-                // 필요 시, 닫힐 때 전체 목록으로 재검색
                 vm.applySearch("", type: searchScope.rawValue)
             }
         }
@@ -68,7 +68,7 @@ struct QuoteListView: View {
             }
         }
         .padding(.horizontal)
-        .padding(.vertical, 8)
+        .padding(.bottom, 8)
     }
 
     private func triggerSearch() {
@@ -76,6 +76,7 @@ struct QuoteListView: View {
         vm.applySearch(trimmed, type: searchScope.rawValue)
     }
 }
+
 
 // MARK: - Supporting Types
 
