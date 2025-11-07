@@ -18,6 +18,7 @@ struct MainAppView: View {
         case purchaseInvoice
         case supplierInvoice
         case search
+        case profile
     }
     
     // 직전 탭을 기억하기 위한 state
@@ -52,7 +53,15 @@ struct MainAppView: View {
                     NavigationStack { SupplierInvoiceListView() }
                 }
             }
-
+            
+            Tab("프로필", systemImage: "person.crop.circle", value: MyTab.profile) {
+                NavigationStack {
+                    ProfileView()
+                        .navigationTitle("내 프로필")
+                        .navigationBarTitleDisplayMode(.inline)
+                }
+            }
+            
         
             Tab(value: MyTab.search, role: .search) {
                 NavigationStack {
@@ -66,12 +75,7 @@ struct MainAppView: View {
         // 검색 창
         .searchable(text: $query,
                     isPresented: $isSearchPresented,
-                    prompt: Text("무엇이든 검색하세요")
-        )
-        .onSubmit(of: .search) {
-            // 검색 실행 로직
-        }
-        .tabBarMinimizeBehavior(.onScrollDown)
+                    prompt: Text("무엇이든 검색하세요"))
     }
 }
 
