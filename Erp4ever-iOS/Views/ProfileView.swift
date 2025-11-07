@@ -10,8 +10,9 @@ import SwiftUI
 struct ProfileView: View {
     @EnvironmentObject private var session: SessionManager
     @StateObject private var vm = ProfileViewModel()
-    @State private var isEditing = false
-    @State private var profile = Profile(
+
+    // 읽기 전용 기본값 (서버 프로필 로딩 전 표시)
+    private let fallback = Profile(
         company: CompanyInfo(
             name: "현대자동차",
             address: "서울시 강남구 테헤란로 123",
@@ -27,26 +28,36 @@ struct ProfileView: View {
         )
     )
 
-    
-    @State private var showAlert = false
-    @State private var alertMessage = ""
-    
-    func handleSave() {
-        guard !profile.company.name.isEmpty, !profile.user.name.isEmpty, !profile.user.email.isEmpty else {
-            alertMessage = "필수 정보를 모두 입력해주세요."
-            showAlert = true
-            return
-        }
-        alertMessage = "정보가 성공적으로 저장되었습니다."
-        showAlert = true
-        isEditing = false
+    // 편의 접근자
+    private var displayName: String {
+        vm.profile?.name ?? fallback.user.name
     }
-    
+    private var displayDept: String {
+        vm.profile?.department ?? fallback.user.department
+    }
+    private var displayPosition: String {
+        vm.profile?.position ?? fallback.user.position
+    }
+
+    private var user: UserInfo {
+        if let p = vm.profile {
+            return UserInfo(
+                name: p.name ?? "",
+                email: p.email ?? "",
+                phone: p.phoneNumber ?? "",
+                department: p.department ?? "",
+                position: p.position ?? ""
+            )
+        } else {
+            return fallback.user
+        }
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    
+
                     // 프로필 카드
                     VStack(spacing: 8) {
                         ZStack {
@@ -57,71 +68,33 @@ struct ProfileView: View {
                                 .font(.system(size: 36))
                                 .foregroundColor(.blue)
                         }
-                        Text(vm.profile?.name ?? profile.user.name)
+                        Text(displayName)
                             .font(.title3.bold())
-                        Text("\(vm.profile?.department ?? profile.user.department) · \(vm.profile?.position ?? profile.user.position)")
+                        Text("\(displayDept) · \(displayPosition)")
                             .font(.subheadline)
                             .foregroundColor(.gray)
                     }
                     .padding()
                     .frame(maxWidth: .infinity)
                     .background(RoundedRectangle(cornerRadius: 12).fill(.white).shadow(radius: 1))
-                    
-                    // 고객사 정보
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("고객사 정보")
-                            .font(.headline)
-                        VStack(spacing: 10) {
-                            CustomInput(label: "회사명", text: $profile.company.name, editable: isEditing)
-                            CustomInput(label: "회사 주소", text: $profile.company.address, editable: isEditing)
-                            CustomInput(label: "회사 전화번호", text: $profile.company.phone, editable: isEditing)
-                            CustomInput(label: "사업자등록번호", text: $profile.company.businessNumber, editable: isEditing)
-                        }
-                    }
-                    .padding()
-                    .background(RoundedRectangle(cornerRadius: 12).fill(.white).shadow(radius: 1))
-                    
-                    // 개인 정보
+
+                    // ✅ 회사/공급사 정보 섹션은 API 연동 전 잠시 제거 (company 참조로 인한 컴파일 에러 방지)
+
+                    // 개인 정보 (읽기 전용)
                     VStack(alignment: .leading, spacing: 12) {
                         Text("개인 정보")
                             .font(.headline)
                         VStack(spacing: 10) {
-                            CustomInput(label: "이름", text: Binding(get: { vm.profile?.name ?? profile.user.name }, set: { profile.user.name = $0 }), editable: isEditing)
-                            CustomInput(label: "이메일", text: Binding(get: { vm.profile?.email ?? profile.user.email }, set: { profile.user.email = $0 }), editable: isEditing, keyboard: .emailAddress)
-                            CustomInput(label: "휴대폰 번호", text: Binding(get: { vm.profile?.phoneNumber ?? profile.user.phone }, set: { profile.user.phone = $0 }), editable: isEditing)
-                            CustomInput(label: "부서", text: Binding(get: { vm.profile?.department ?? profile.user.department }, set: { profile.user.department = $0 }), editable: isEditing)
-                            CustomInput(label: "직급", text: Binding(get: { vm.profile?.position ?? profile.user.position }, set: { profile.user.position = $0 }), editable: isEditing)
-                            // 참고: 입사일/근속기간/주소 등은 추가 섹션으로 확장 가능
+                            InfoRow(label: "이름", value: user.name)
+                            InfoRow(label: "이메일", value: user.email)
+                            InfoRow(label: "휴대폰 번호", value: user.phone)
+                            InfoRow(label: "부서", value: user.department)
+                            InfoRow(label: "직급", value: user.position)
                         }
                     }
                     .padding()
                     .background(RoundedRectangle(cornerRadius: 12).fill(.white).shadow(radius: 1))
-                    
-                    // 편집 모드 버튼
-                    if isEditing {
-                        HStack(spacing: 12) {
-                            Button("취소") { isEditing = false }
-                                .buttonStyle(.bordered)
-                                .tint(.gray)
-                            Button("저장") { handleSave() }
-                                .buttonStyle(.borderedProminent)
-                                .tint(.blue)
-                        }
-                        .padding(.horizontal)
-                    }
-                    
-                    // 앱 정보
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("앱 정보")
-                            .font(.headline)
-                        VStack(spacing: 8) {
-                            InfoRow(label: "앱 버전", value: "1.0.0")
-                            InfoRow(label: "마지막 업데이트", value: "2024-01-15")
-                        }
-                    }
-                    .padding()
-                    .background(RoundedRectangle(cornerRadius: 12).fill(.white).shadow(radius: 1))
-                    
+
                     // 기타 메뉴
                     VStack(spacing: 0) {
                         MenuRow(title: "알림 설정")
@@ -135,29 +108,18 @@ struct ProfileView: View {
                         }
                     }
                     .background(RoundedRectangle(cornerRadius: 12).fill(.white).shadow(radius: 1))
-                    
+
                     Spacer(minLength: 40)
                 }
                 .padding(.horizontal)
                 .padding(.top, 10)
                 .background(Color(.systemGroupedBackground))
-            }.background(Color(.systemGroupedBackground))
-            .toolbar {
-                if !isEditing {
-                    Button("편집") { isEditing = true }
-                        .foregroundColor(.blue)
-                }
             }
-            .alert(alertMessage, isPresented: $showAlert) {
-                Button("확인", role: .cancel) { }
-            }
+            .background(Color(.systemGroupedBackground))
         }
         .onAppear { if vm.profile == nil { vm.load() } }
     }
-    
-   
 }
-
 
 #Preview {
     ProfileView()

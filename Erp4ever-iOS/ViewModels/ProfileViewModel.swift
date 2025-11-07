@@ -7,7 +7,6 @@
 
 import Foundation
 import Combine
-import Combine
 
 final class ProfileViewModel: ObservableObject {
     @Published var profile: EmployeeProfile? = nil
@@ -24,19 +23,34 @@ final class ProfileViewModel: ObservableObject {
             await MainActor.run { self.isLoading = true; self.error = nil }
 
             guard let token = TokenStore.shared.loadAccessToken() else {
-                await MainActor.run { self.isLoading = false; self.error = "인증 토큰이 없습니다." }
+                await MainActor.run {
+                    self.isLoading = false
+                    self.error = "인증 토큰이 없습니다."
+                }
                 return
             }
 
             do {
                 let p = try await ProfileService.shared.fetchProfile(accessToken: token)
-                await MainActor.run { self.profile = p; self.isLoading = false }
+                await MainActor.run {
+                    self.profile = p
+                    self.isLoading = false
+                }
             } catch ProfileServiceError.unauthorized {
-                await MainActor.run { self.isLoading = false; self.error = "세션이 만료되었습니다." }
+                await MainActor.run {
+                    self.isLoading = false
+                    self.error = "세션이 만료되었습니다."
+                }
             } catch let ProfileServiceError.http(status, _) {
-                await MainActor.run { self.isLoading = false; self.error = "프로필 조회 실패 (\(status))" }
+                await MainActor.run {
+                    self.isLoading = false
+                    self.error = "프로필 조회 실패 (\(status))"
+                }
             } catch {
-                await MainActor.run { self.isLoading = false; self.error = "알 수 없는 오류가 발생했습니다." }
+                await MainActor.run {
+                    self.isLoading = false
+                    self.error = "알 수 없는 오류가 발생했습니다."
+                }
             }
         }
     }
