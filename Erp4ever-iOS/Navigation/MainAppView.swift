@@ -9,7 +9,7 @@ import SwiftUI
 
 struct MainAppView: View {
     @EnvironmentObject private var session: SessionManager
-    @State private var selectedTab: MyTab = .home
+    
 
     enum MyTab: Hashable {
         case home
@@ -19,11 +19,18 @@ struct MainAppView: View {
         case supplierInvoice
         case search
     }
+    
+    // 직전 탭을 기억하기 위한 state
+    @State private var selectedTap: MyTab = .home
+    
+    // 검색 상태
+    @State private var query: String = ""
+    @State private var isSearchPresented: Bool = false
 
     var body: some View {
         let userType = session.currentUser?.userType
 
-        TabView(selection: $selectedTab) {
+        TabView(selection: $selectedTap) {
             Tab("홈", systemImage: "house", value: MyTab.home) {
                 NavigationStack {
                     HomeView()
@@ -46,18 +53,24 @@ struct MainAppView: View {
                 }
             }
 
-            // 검색 탭은 홈일 때는 숨기고, 홈이 아닐 때만 보이도록
-            if selectedTab != .home {
-                Tab(value: MyTab.search, role: .search) {
-                    NavigationStack {
-                        SearchView()
-                    }
-                } label: {
-                    Label("검색", systemImage: "magnifyingglass")
+        
+            Tab(value: MyTab.search, role: .search) {
+                NavigationStack {
+                    SearchView()
                 }
+            } label: {
+                Label("검색", systemImage: "magnifyingglass")
             }
+            
         }
-        // iOS 26에서 탭바 스크롤 시 축소되게 적용
+        // 검색 창
+        .searchable(text: $query,
+                    isPresented: $isSearchPresented,
+                    prompt: Text("무엇이든 검색하세요")
+        )
+        .onSubmit(of: .search) {
+            // 검색 실행 로직
+        }
         .tabBarMinimizeBehavior(.onScrollDown)
     }
 }
