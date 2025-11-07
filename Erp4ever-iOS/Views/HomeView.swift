@@ -4,40 +4,37 @@ import SwiftUI
 struct HomeView: View {
     @EnvironmentObject private var session: SessionManager
     @State private var isProfileSheetPresented = false
-    
-    private var userType: String? {
-        session.currentUser?.userType
-    }
 
-    
+    private var userType: String? { session.currentUser?.userType }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                
-                // 로고
-                Header(
-                    userName: session.currentUser?.userName,
-                    onProfileTapped: { isProfileSheetPresented = true }
-                )
-                .padding(.top, 8)
-                
-                // 사용자 정보
-                UserInfoBanner(user: session.currentUser)
-                    .padding(.horizontal)
-                
-                // 빠른 작업
-                QuickActionView(userType: userType)
-                    .padding(.horizontal)
-                
-                // 최근 활동
-                RecentActivitesView()
-                    .padding(.horizontal)
-                    .padding(.bottom, 12)
+        VStack(spacing: 0) {
+            // 고정 헤더 (스크롤 밖)
+            Header(
+                onProfileTapped: { isProfileSheetPresented = true }
+            )
+            .padding(.top, 8)
+            .padding(.horizontal, 12)
+            .background(.thinMaterial) // 선택: 고정 느낌 강화
+        
 
-                
+            // 아래만 스크롤
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    UserInfoBanner(user: session.currentUser)
+                        .padding(.horizontal)
+
+                    QuickActionView(userType: userType)
+                        .padding(.horizontal)
+
+                    RecentActivitesView()
+                        .padding(.horizontal)
+                        .padding(.bottom, 12)
+                }
+                .padding(.top, 16)
+                .padding(.bottom, 16)
             }
-            .padding(.bottom, 16)
+            .background(Color(.systemGroupedBackground))
         }
         .background(Color(.systemGroupedBackground))
         .sheet(isPresented: $isProfileSheetPresented) {
@@ -51,6 +48,7 @@ struct HomeView: View {
         }
     }
 }
+
 
 
 
