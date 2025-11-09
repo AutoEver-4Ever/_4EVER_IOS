@@ -26,6 +26,7 @@ enum APIEndpoints {
         static var base: String { APIEndpoints.gwBase }
         // 사용자 정보 조회
         static var userInfo: String { base + "/api/user/info" }
+        static var dashboardWorkflows: String { base + "/api/dashboard/workflows" }
         
         // 프로필 조회(BUSINESS)
         static var businessProfile: String { base + "/api/business/profile" }
