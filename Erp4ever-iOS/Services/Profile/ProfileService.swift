@@ -33,8 +33,7 @@ final class ProfileService {
     static let shared = ProfileService()
     private init() {}
 
-    // GET /api/business/profile
-    func fetchProfile(accessToken: String) async throws -> EmployeeProfile {
+    func fetchProfile(accessToken: String) async throws -> BusinessProfilePayload {
         guard let url = URL(string: APIEndpoints.Gateway.businessProfile) else {
             throw ProfileServiceError.invalidURL
         }
@@ -65,7 +64,7 @@ final class ProfileService {
         }
 
         do {
-            let decoded = try JSONDecoder().decode(APIResponse<EmployeeProfile>.self, from: data)
+            let decoded = try JSONDecoder().decode(ApiResponse<BusinessProfilePayload>.self, from: data)
             guard let profile = decoded.data else { throw ProfileServiceError.decode }
             if #available(iOS 14.0, *) { profileLog.info("[INFO][\(http.statusCode)] 프로필을 성공적으로 조회했습니다.") }
             print("[INFO][\(http.statusCode)] 프로필을 성공적으로 조회했습니다.")

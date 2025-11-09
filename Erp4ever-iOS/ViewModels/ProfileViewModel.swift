@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 final class ProfileViewModel: ObservableObject {
-    @Published var profile: EmployeeProfile? = nil
+    @Published var profile: BusinessProfilePayload? = nil
     @Published var isLoading: Bool = false
     @Published var error: String? = nil
 

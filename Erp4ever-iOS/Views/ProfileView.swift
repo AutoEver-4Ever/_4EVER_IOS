@@ -29,27 +29,71 @@ struct ProfileView: View {
     )
 
     // 편의 접근자
-    private var displayName: String {
-        vm.profile?.name ?? fallback.user.name
-    }
-    private var displayDept: String {
-        vm.profile?.department ?? fallback.user.department
-    }
-    private var displayPosition: String {
-        vm.profile?.position ?? fallback.user.position
+    private var displayName: String { user.name.isEmpty ? fallback.user.name : user.name }
+    private var roleDescription: String {
+        switch vm.profile {
+        case .customer:
+            return "고객사 담당자"
+        case .supplier:
+            return "공급사 담당자"
+        case .employee(let employee):
+            let dept = employee.department?.isEmpty == false ? employee.department! : fallback.user.department
+            let position = employee.position?.isEmpty == false ? employee.position! : fallback.user.position
+            return "\(dept) · \(position)"
+        case .none:
+            return "\(fallback.user.department) · \(fallback.user.position)"
+        }
     }
 
     private var user: UserInfo {
-        if let p = vm.profile {
+        switch vm.profile {
+        case .employee(let e):
             return UserInfo(
-                name: p.name ?? "",
-                email: p.email ?? "",
-                phone: p.phoneNumber ?? "",
-                department: p.department ?? "",
-                position: p.position ?? ""
+                name: e.name ?? "",
+                email: e.email ?? "",
+                phone: e.phoneNumber ?? "",
+                department: e.department ?? "",
+                position: e.position ?? ""
             )
-        } else {
+        case .customer(let c):
+            return UserInfo(
+                name: c.customerName,
+                email: c.email,
+                phone: c.phoneNumber,
+                department: "고객사",
+                position: "담당자"
+            )
+        case .supplier(let s):
+            return UserInfo(
+                name: s.supplierUserName,
+                email: s.supplierUserEmail,
+                phone: s.supplierUserPhoneNumber,
+                department: "공급사",
+                position: "담당자"
+            )
+        case .none:
             return fallback.user
+        }
+    }
+
+    private var company: CompanyInfo {
+        switch vm.profile {
+        case .customer(let c):
+            return CompanyInfo(
+                name: c.companyName,
+                address: combinedAddress(base: c.baseAddress, detail: c.detailAddress),
+                phone: c.officePhone,
+                businessNumber: c.businessNumber
+            )
+        case .supplier(let s):
+            return CompanyInfo(
+                name: s.companyName,
+                address: combinedAddress(base: s.baseAddress, detail: s.detailAddress),
+                phone: s.officePhone,
+                businessNumber: s.businessNumber
+            )
+        case .employee, .none:
+            return fallback.company
         }
     }
 
@@ -70,7 +114,7 @@ struct ProfileView: View {
                         }
                         Text(displayName)
                             .font(.title3.bold())
-                        Text("\(displayDept) · \(displayPosition)")
+                        Text(roleDescription)
                             .font(.subheadline)
                             .foregroundColor(.gray)
                     }
@@ -78,7 +122,18 @@ struct ProfileView: View {
                     .frame(maxWidth: .infinity)
                     .background(RoundedRectangle(cornerRadius: 12).fill(.white).shadow(radius: 1))
 
-                    // ✅ 회사/공급사 정보 섹션은 API 연동 전 잠시 제거 (company 참조로 인한 컴파일 에러 방지)
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("회사 정보")
+                            .font(.headline)
+                        VStack(spacing: 10) {
+                            InfoRow(label: "회사명", value: company.name)
+                            InfoRow(label: "사업자번호", value: company.businessNumber)
+                            InfoRow(label: "대표 전화", value: company.phone)
+                            InfoRow(label: "주소", value: company.address)
+                        }
+                    }
+                    .padding()
+                    .background(RoundedRectangle(cornerRadius: 12).fill(.white).shadow(radius: 1))
 
                     // 개인 정보 (읽기 전용)
                     VStack(alignment: .leading, spacing: 12) {
@@ -118,6 +173,11 @@ struct ProfileView: View {
             .background(Color(.systemGroupedBackground))
         }
         .onAppear { if vm.profile == nil { vm.load() } }
+    }
+
+    private func combinedAddress(base: String, detail: String) -> String {
+        if detail.isEmpty { return base }
+        return "\(base) \(detail)"
     }
 }
 
