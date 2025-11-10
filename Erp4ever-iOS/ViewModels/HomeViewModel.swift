@@ -1,6 +1,6 @@
 import Foundation
+import Combine
 
-@MainActor
 final class HomeViewModel: ObservableObject {
     @Published private(set) var tabs: [DashboardWorkflowTabData] = []
     @Published var selectedTabCode: String?

@@ -66,20 +66,16 @@ struct MainAppView: View {
             Tab(value: MyTab.search, role: .search) {
                 NavigationStack {
                     SearchView()
+                        .searchable(text: $query,
+                                    isPresented: $isSearchPresented,
+                                    prompt: Text("무엇이든 검색하세요"))
                 }
             } label: {
                 Label("검색", systemImage: "magnifyingglass")
             }
-            
         }
-        // 검색 창
-        .searchable(text: $query,
-                    isPresented: $isSearchPresented,
-                    prompt: Text("무엇이든 검색하세요"))
     }
 }
-
-
 
 #Preview {
     MainAppView()
