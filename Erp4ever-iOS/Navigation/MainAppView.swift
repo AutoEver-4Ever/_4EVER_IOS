@@ -10,7 +10,6 @@ import SwiftUI
 struct MainAppView: View {
     @EnvironmentObject private var session: SessionManager
     
-
     enum MyTab: Hashable {
         case home
         case quote
@@ -27,6 +26,13 @@ struct MainAppView: View {
     // 검색 상태
     @State private var query: String = ""
     @State private var isSearchPresented: Bool = false
+    
+    // 마지막 View를 기억하는 상태
+    @State private var lastContentTab: MyTab = .home
+    
+    //
+    @StateObject private var searchCoordinator = searchCoordinator()
+    
 
     var body: some View {
         let userType = session.currentUser?.userType
