@@ -73,6 +73,18 @@ final class SearchCoordinator: ObservableObject {
         }
     }
 
+    enum PurchaseInvoiceDateFilter: Hashable, CaseIterable {
+        case all
+        case last30Days
+
+        var title: String {
+            switch self {
+            case .all: return "전체"
+            case .last30Days: return "최근 30일"
+            }
+        }
+    }
+
     // MARK: Published state
     @Published var query: String = ""
     @Published var isSearching: Bool = false
@@ -82,6 +94,7 @@ final class SearchCoordinator: ObservableObject {
     @Published var purchaseOrderSearchType: PurchaseOrderSearchType = .supplierCompanyName
     @Published var quoteSearchType: QuoteSearchType = .quotationNumber
     @Published var salesInvoiceDateFilter: SalesInvoiceDateFilter = .all
+    @Published var purchaseInvoiceDateFilter: PurchaseInvoiceDateFilter = .all
 
     @Published var resultsPO: [PurchaseOrderListItem] = []
     @Published var resultsQuote: [QuotationListItem] = []
@@ -176,6 +189,8 @@ final class SearchCoordinator: ObservableObject {
             await searchQuotes(keyword: keyword)
         case .accountReceivable:
             await searchSalesInvoices(keyword: keyword)
+        case .accountPayable:
+            await searchPurchaseInvoices(keyword: keyword)
         default:
             await MainActor.run {
                 self.errorMessage = "아직 \(scope.title) 검색은 준비 중입니다."
@@ -325,8 +340,63 @@ final class SearchCoordinator: ObservableObject {
         }
     }
 
+    private func searchPurchaseInvoices(keyword: String) async {
+        guard let token = TokenStore.shared.loadAccessToken() else {
+            await MainActor.run {
+                self.errorMessage = "인증 토큰이 없습니다. 다시 로그인해주세요."
+                self.isLoading = false
+            }
+            return
+        }
+
+        var query = PurchaseInvoiceQuery()
+        query.company = keyword
+        applyPurchaseInvoiceDateFilter(to: &query)
+        query.page = 0
+        query.size = 20
+
+        do {
+            let page = try await PurchaseInvoiceService.shared.fetchList(accessToken: token, query: query)
+            await MainActor.run {
+                self.resultsAP = page.content
+                self.errorMessage = nil
+                self.markUpdated()
+            }
+        } catch PurchaseInvoiceServiceError.unauthorized {
+            await MainActor.run {
+                self.errorMessage = "세션이 만료되었습니다. 다시 로그인해주세요."
+                self.isLoading = false
+            }
+        } catch let PurchaseInvoiceServiceError.http(status, _) {
+            await MainActor.run {
+                self.errorMessage = "매입 전표 검색 실패 (\(status))"
+                self.isLoading = false
+            }
+        } catch {
+            await MainActor.run {
+                self.errorMessage = "매입 전표 검색 중 알 수 없는 오류가 발생했습니다."
+                self.isLoading = false
+            }
+        }
+    }
+
     private func applySalesInvoiceDateFilter(to query: inout SupplierInvoiceQuery) {
         switch salesInvoiceDateFilter {
+        case .all:
+            query.startDate = nil
+            query.endDate = nil
+        case .last30Days:
+            let formatter = SearchCoordinator.dateFormatter
+            let end = Date()
+            if let start = Calendar.current.date(byAdding: .day, value: -30, to: end) {
+                query.startDate = formatter.string(from: start)
+            }
+            query.endDate = formatter.string(from: end)
+        }
+    }
+
+    private func applyPurchaseInvoiceDateFilter(to query: inout PurchaseInvoiceQuery) {
+        switch purchaseInvoiceDateFilter {
         case .all:
             query.startDate = nil
             query.endDate = nil

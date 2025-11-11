@@ -51,6 +51,10 @@ struct SearchView: View {
             guard effectiveScope == .accountReceivable, !trimmedQuery.isEmpty else { return }
             coordinator.performSearch()
         }
+        .onChange(of: coordinator.purchaseInvoiceDateFilter) { _ in
+            guard effectiveScope == .accountPayable, !trimmedQuery.isEmpty else { return }
+            coordinator.performSearch()
+        }
     }
 
     // MARK: - Scope Selector
@@ -105,15 +109,21 @@ struct SearchView: View {
                     Text($0.title).tag($0)
                 }
             }
-        case .accountReceivable:
-            filterGroup(title: "매출 전표 기간", selection: salesInvoiceFilterBinding) {
-                ForEach(SearchCoordinator.SalesInvoiceDateFilter.allCases, id: \.self) {
+       case .accountReceivable:
+           filterGroup(title: "매출 전표 기간", selection: salesInvoiceFilterBinding) {
+               ForEach(SearchCoordinator.SalesInvoiceDateFilter.allCases, id: \.self) {
+                   Text($0.title).tag($0)
+               }
+           }
+        case .accountPayable:
+            filterGroup(title: "매입 전표 기간", selection: purchaseInvoiceFilterBinding) {
+                ForEach(SearchCoordinator.PurchaseInvoiceDateFilter.allCases, id: \.self) {
                     Text($0.title).tag($0)
                 }
             }
-        default:
-            EmptyView()
-        }
+       default:
+           EmptyView()
+       }
     }
 
     private func filterGroup<SelectionValue: Hashable, Content: View>(
@@ -151,6 +161,13 @@ struct SearchView: View {
         Binding(
             get: { coordinator.salesInvoiceDateFilter },
             set: { coordinator.salesInvoiceDateFilter = $0 }
+        )
+    }
+
+    private var purchaseInvoiceFilterBinding: Binding<SearchCoordinator.PurchaseInvoiceDateFilter> {
+        Binding(
+            get: { coordinator.purchaseInvoiceDateFilter },
+            set: { coordinator.purchaseInvoiceDateFilter = $0 }
         )
     }
 
