@@ -15,7 +15,10 @@ struct SearchView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 scopeSelector
-                if coordinator.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                if effectiveScope == .purchaseOrder {
+                    purchaseOrderFilter
+                }
+                if trimmedQuery.isEmpty {
                     suggestionSection
                 } else {
                     resultSection
@@ -27,6 +30,21 @@ struct SearchView: View {
         .background(Color(.systemGroupedBackground))
         .navigationTitle("검색")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            guard let first = allowedScopes.first, !allowedScopes.contains(coordinator.scope) else { return }
+            coordinator.scope = first
+        }
+        .onSubmit(of: .search) {
+            coordinator.performSearch()
+        }
+        .onChange(of: coordinator.scope) { _ in
+            guard !trimmedQuery.isEmpty else { return }
+            coordinator.performSearch()
+        }
+        .onChange(of: coordinator.purchaseOrderSearchType) { _ in
+            guard effectiveScope == .purchaseOrder, !trimmedQuery.isEmpty else { return }
+            coordinator.performSearch()
+        }
     }
 
     // MARK: - Scope Selector
@@ -66,16 +84,38 @@ struct SearchView: View {
         }
     }
 
+    private var purchaseOrderFilter: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("발주서 검색 기준")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Picker("발주서 검색 기준", selection: purchaseOrderTypeBinding) {
+                ForEach(SearchCoordinator.PurchaseOrderSearchType.allCases, id: \.self) { type in
+                    Text(type.title).tag(type)
+                }
+            }
+            .pickerStyle(.segmented)
+        }
+    }
+
+    private var purchaseOrderTypeBinding: Binding<SearchCoordinator.PurchaseOrderSearchType> {
+        Binding(
+            get: { coordinator.purchaseOrderSearchType },
+            set: { coordinator.purchaseOrderSearchType = $0 }
+        )
+    }
+
     // MARK: - Suggestion Section (query 없음)
 
     private var suggestionSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(suggestionTitle(coordinator.scope))
+            Text(suggestionTitle(effectiveScope))
                 .font(.headline)
-            Text(suggestionDescription(coordinator.scope))
+            Text(suggestionDescription(effectiveScope))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-            suggestionTiles(for: coordinator.scope)
+            suggestionTiles(for: effectiveScope)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -86,7 +126,9 @@ struct SearchView: View {
         VStack(alignment: .leading, spacing: 16) {
             resultHeader
             Group {
-                if coordinator.isLoading {
+                if let error = coordinator.errorMessage {
+                    errorCard(error)
+                } else if coordinator.isLoading {
                     ProgressView("검색 중입니다...")
                         .frame(maxWidth: .infinity, alignment: .leading)
                 } else if currentResultCount == 0 {
@@ -95,7 +137,7 @@ struct SearchView: View {
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 } else {
-                    resultList(for: coordinator.scope)
+                    resultList(for: effectiveScope)
                 }
             }
             .animation(.easeInOut, value: coordinator.isLoading)
@@ -106,7 +148,7 @@ struct SearchView: View {
 
     private var resultHeader: some View {
         HStack {
-            Text("\(coordinator.scope.title) 검색 결과")
+            Text("\(effectiveScope.title) 검색 결과")
                 .font(.headline)
             Spacer()
             if let updated = coordinator.lastUpdatedAt {
@@ -118,6 +160,11 @@ struct SearchView: View {
     }
 
     // MARK: - Helpers
+
+    // - 현재 검색어를 미리 잘라 여러 곳에서 재사용
+    private var trimmedQuery: String {
+        coordinator.query.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 
     // - 사용자 타입 문자를 정규화해 이후 분기에서 재사용
     private var normalizedUserType: String {
@@ -133,9 +180,16 @@ struct SearchView: View {
         }
     }
 
+    private var effectiveScope: SearchCoordinator.Scope {
+        if allowedScopes.contains(coordinator.scope) {
+            return coordinator.scope
+        }
+        return allowedScopes.first ?? .all
+    }
+
     // - 현재 선택된 스코프에 따라 결과 개수를 계산
     private var currentResultCount: Int {
-        switch coordinator.scope {
+        switch effectiveScope {
         case .purchaseOrder: return coordinator.resultsPO.count
         case .quote: return coordinator.resultsQuote.count
         case .accountReceivable: return coordinator.resultsAR.count
@@ -155,13 +209,13 @@ struct SearchView: View {
     }
 
     private func scopeButtonBackground(_ scope: SearchCoordinator.Scope) -> some View {
-        let isSelected = coordinator.scope == scope
+        let isSelected = effectiveScope == scope
         return RoundedRectangle(cornerRadius: 12)
             .fill(isSelected ? Color.blue.opacity(0.12) : Color(.systemBackground))
     }
 
     private func scopeBorderColor(_ scope: SearchCoordinator.Scope) -> Color {
-        coordinator.scope == scope ? .blue : Color.gray.opacity(0.2)
+        effectiveScope == scope ? .blue : Color.gray.opacity(0.2)
     }
 
     // MARK: - Suggestions
@@ -251,6 +305,28 @@ struct SearchView: View {
         .padding()
         .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemBackground)))
         .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
+    }
+
+    // - 에러가 발생했을 때 보여줄 공통 카드
+    private func errorCard(_ message: String) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("검색에 실패했습니다.")
+                .font(.headline)
+            Text(message)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            Button {
+                coordinator.performSearch()
+            } label: {
+                Text("다시 시도")
+                    .font(.subheadline.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemBackground)))
+        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
 
     // MARK: - Result Lists
