@@ -174,31 +174,31 @@ struct SearchView: View {
             suggestionCard(
                 title: "최근 발주서",
                 description: "자주 확인한 발주서를 모아 보여드립니다.",
-                icon: "doc.plaintext"
+                icon: "doc.text"
             )
         case .accountReceivable:
             suggestionCard(
                 title: "매출 전표 요약",
                 description: "최근 발행된 매출 전표 상태를 빠르게 확인하세요.",
-                icon: "list.bullet.rectangle"
+                icon: "list.bullet"
             )
         case .quote:
             suggestionCard(
                 title: "견적서 즐겨찾기",
                 description: "고객사와 주고받은 최신 견적서를 찾아보세요.",
-                icon: "doc.text.magnifyingglass"
+                icon: "magnifyingglass.circle"
             )
         case .accountPayable:
             suggestionCard(
                 title: "매입 전표 일정",
                 description: "다가오는 납기일 기준으로 매입 전표를 정리합니다.",
-                icon: "calendar.badge.clock"
+                icon: "calendar"
             )
         default:
             suggestionCard(
                 title: "통합 검색",
                 description: "원하는 영역을 선택한 뒤 검색을 시작하세요.",
-                icon: "magnifyingglass.circle"
+                icon: "magnifyingglass"
             )
         }
     }
@@ -229,9 +229,11 @@ struct SearchView: View {
     private func suggestionCard(title: String, description: String, icon: String) -> some View {
         HStack(spacing: 16) {
             Image(systemName: icon)
-                .font(.title3)
+                .renderingMode(.template)
                 .foregroundStyle(.blue)
-                .frame(width: 36, height: 36)
+                .font(.title3)
+                .frame(width: 20, height: 20)
+                .padding(8)
                 .background(
                     RoundedRectangle(cornerRadius: 10)
                         .fill(Color.blue.opacity(0.1))
