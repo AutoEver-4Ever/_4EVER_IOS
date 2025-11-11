@@ -1,127 +1,257 @@
 import SwiftUI
 
-
 struct HomeView: View {
-    // 빠른 작업
-    private var quickActions: [QuickAction] {
-        [
-            QuickAction(
-                title: "견적 요청",
-                systemImage: "doc.badge.plus",
-                color: .blue,
-                destination: AnyView(NewQuoteView())
-            ),
-            QuickAction(
-                title: "견적 목록",
-                systemImage: "doc.text.magnifyingglass",
-                color: .green,
-                destination: AnyView(QuoteListView())
-            ),
-            QuickAction(
-                title: "주문 관리",
-                systemImage: "cart",
-                color: .purple,
-                destination: AnyView(OrderListView())
-            ),
-            QuickAction(
-                title: "매입전표",
-                systemImage: "receipt",
-                color: .orange,
-                destination: AnyView(PurchaseListView())
-            )
-        ]
+    @EnvironmentObject private var session: SessionManager
+    @StateObject private var viewModel: HomeViewModel
+    @State private var isProfileSheetPresented = false
+
+    init(viewModel: HomeViewModel = HomeViewModel()) {
+        _viewModel = StateObject(wrappedValue: viewModel)
     }
 
-    // 최근 작업 목업 데이터
-    private let recentActivities: [RecentActivity] = [
-        .init(type: "견적", title: "Q2024-001 - 범퍼 견적서", date: "2024-01-15", status: "검토중"),
-        .init(type: "주문", title: "O2024-005 - 사이드미러 주문", date: "2024-01-14", status: "배송중"),
-        .init(type: "견적", title: "Q2024-002 - 헤드라이트 견적서", date: "2024-01-13", status: "승인됨")
-    ]
+    private var userType: String? { session.currentUser?.userType }
+    private var workflowTabs: [DashboardWorkflowTabData] { viewModel.tabs }
+    private var selectedWorkflowItems: [DashboardWorkflowItem] { viewModel.selectedItems }
+    private var workflowTabSelection: Binding<String> {
+        Binding(
+            get: { viewModel.selectedTabCode ?? workflowTabs.first?.tabCode ?? "" },
+            set: { viewModel.selectTab(code: $0) }
+        )
+    }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                
-                Header(title: "차량 외장재 관리")
-                    .padding(.horizontal)
-                    .padding(.top, 8)
+        VStack(spacing: 0) {
+            Header(
+                onProfileTapped: { isProfileSheetPresented = true }
+            )
+            .padding(.top, 8)
+            .padding(.horizontal, 12)
+            .background(.thinMaterial)
 
-                
-                Card {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("안녕하세요!")
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    UserInfoBanner(user: session.currentUser)
+                        .padding(.horizontal)
+
+                    QuickActionView(userType: userType)
+                        .padding(.horizontal)
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("워크플로우")
                             .font(.headline)
-                            .foregroundStyle(.primary)
-                        Text("오늘도 효율적인 업무 관리를 시작해보세요.")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .padding(.horizontal)
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("빠른 작업")
-                        .font(.headline)
-                        .foregroundStyle(.primary)
-                        .padding(.horizontal)
-
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 2), spacing: 12) {
-                        ForEach(quickActions) { action in
-                            NavigationLink(destination: action.destination) {
-                                Card {
-                                    VStack(spacing: 10) {
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 12)
-                                                .fill(action.color)
-                                                .frame(width: 48, height: 48)
-                                            Image(systemName: action.systemImage)
-                                                .foregroundStyle(.white)
-                                                .font(.system(size: 20, weight: .semibold))
-                                        }
-                                        Text(action.title)
-                                            .font(.subheadline.weight(.medium))
-                                            .foregroundStyle(.primary)
-                                            .lineLimit(1)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 8)
-                                }
-                            }
-                        }
+                        workflowTabPicker
+                        workflowList
                     }
                     .padding(.horizontal)
                 }
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("최근 활동")
-                        .font(.headline)
-                        .foregroundStyle(.primary)
-                        .padding(.horizontal)
-
-                    Card {
-                        VStack(spacing: 0) {
-                            ForEach(Array(recentActivities.enumerated()), id: \.0) { index, activity in
-                                ActivityRow(activity: activity)
-
-                                if index != recentActivities.count - 1 {
-                                    Divider().padding(.leading, 12)
-                                }
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.bottom, 12)
-                }
+                .padding(.top, 16)
+                .padding(.bottom, 16)
             }
-            .padding(.bottom, 16)
+            .background(Color(.systemGroupedBackground))
         }
         .background(Color(.systemGroupedBackground))
+        .task {
+            viewModel.loadDashboardWorkflows()
+        }
+        .onChange(of: session.isAuthenticated) { isAuthenticated in
+            if isAuthenticated {
+                viewModel.loadDashboardWorkflows(force: true)
+            }
+        }
+        .sheet(isPresented: $isProfileSheetPresented) {
+            if #available(iOS 16.0, *) {
+                ProfileView()
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
+            } else {
+                ProfileView()
+            }
+        }
+    }
+
+    private var workflowTabPicker: some View {
+        Picker("워크플로우 탭", selection: workflowTabSelection) {
+            ForEach(workflowTabs) { tab in
+                Text(DashboardWorkflowTab.title(for: tab.tabCode))
+                    .tag(tab.tabCode)
+            }
+        }
+        .pickerStyle(.segmented)
+        .disabled(workflowTabs.isEmpty)
+    }
+
+    private var workflowList: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if viewModel.isLoading {
+                VStack(spacing: 12) {
+                    ProgressView()
+                    Text("워크플로우를 불러오는 중입니다...")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, minHeight: 120)
+            } else if let error = viewModel.errorMessage {
+                VStack(spacing: 12) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.largeTitle)
+                        .foregroundStyle(.orange)
+                    Text(error)
+                        .font(.subheadline)
+                        .multilineTextAlignment(.center)
+                    Button("다시 시도") {
+                        viewModel.loadDashboardWorkflows(force: true)
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+                .frame(maxWidth: .infinity, minHeight: 140)
+            } else if selectedWorkflowItems.isEmpty {
+                VStack(spacing: 8) {
+                    Image(systemName: "tray")
+                        .font(.largeTitle)
+                        .foregroundStyle(.secondary)
+                    Text("표시할 워크플로우가 없습니다.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, minHeight: 120)
+            } else {
+                ForEach(selectedWorkflowItems) { item in
+                    DashboardWorkflowRow(item: item)
+                        .padding(.vertical, 12)
+
+                    if item.id != selectedWorkflowItems.last?.id {
+                        Divider()
+                    }
+                }
+            }
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
 }
 
+private struct DashboardWorkflowRow: View {
+    let item: DashboardWorkflowItem
 
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(item.itemNumber)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.primary)
 
-#Preview {
-    MainAppView()
+                Spacer()
+
+                WorkflowStatusBadge(status: item.statusCode)
+            }
+
+            Text(item.itemTitle)
+                .font(.body)
+                .foregroundColor(.primary)
+
+            HStack(spacing: 12) {
+                Label(item.name, systemImage: "person.crop.circle.fill")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .labelStyle(.titleAndIcon)
+
+                Spacer()
+
+                HStack(spacing: 4) {
+                    Image(systemName: "calendar")
+                    Text(formattedDate)
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private var formattedDate: String {
+        if let date = DateFormatters.iso8601.date(from: item.date) {
+            return DateFormatters.display.string(from: date)
+        }
+        if let date = DateFormatters.iso8601NoFraction.date(from: item.date) {
+            return DateFormatters.display.string(from: date)
+        }
+        return item.date
+    }
+}
+
+private struct WorkflowStatusBadge: View {
+    let status: String
+
+    private var displayText: String {
+        statusDisplayMap[status] ?? status
+    }
+
+    var body: some View {
+        Text(displayText)
+            .font(.caption.weight(.semibold))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(Color.secondary.opacity(0.15))
+            .clipShape(Capsule())
+    }
+
+    private var statusDisplayMap: [String: String] {
+        [
+            "PENDING": "대기",
+            "APPROVAL": "승인",
+            "REJECTED": "반려",
+            "IN_PROGRESS": "진행중",
+            "COMPLETED": "완료"
+        ]
+    }
+}
+
+private enum DateFormatters {
+    static let iso8601: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
+
+    static let iso8601NoFraction: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter
+    }()
+
+    static let display: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy.MM.dd"
+        return formatter
+    }()
+}
+
+#Preview("HomeView – CUSTOMER") {
+    let sm = SessionManager()
+    sm.isAuthenticated = true
+    sm.currentUser = UserInfoResponseDto(
+        userId: "preview-customer",
+        userName: "고객 관리자",
+        loginEmail: "customer-admin@everp.com",
+        userRole: "CUSTOMER_ADMIN",
+        userType: "CUSTOMER"
+    )
+    return HomeView(viewModel: .previewModel())
+        .environmentObject(sm)
+}
+
+#Preview("HomeView – SUPPLIER") {
+    let sm = SessionManager()
+    sm.isAuthenticated = true
+    sm.currentUser = UserInfoResponseDto(
+        userId: "preview-supplier",
+        userName: "공급사 관리자",
+        loginEmail: "supplier-admin@everp.com",
+        userRole: "SUPPLIER_ADMIN",
+        userType: "SUPPLIER"
+    )
+    return HomeView(viewModel: .previewModel())
+        .environmentObject(sm)
 }

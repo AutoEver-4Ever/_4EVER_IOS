@@ -8,8 +8,11 @@
 import SwiftUI
 
 struct ProfileView: View {
-    @State private var isEditing = false
-    @State private var profile = Profile(
+    @EnvironmentObject private var session: SessionManager
+    @StateObject private var vm = ProfileViewModel()
+
+    // 읽기 전용 기본값 (서버 프로필 로딩 전 표시)
+    private let fallback = Profile(
         company: CompanyInfo(
             name: "현대자동차",
             address: "서울시 강남구 테헤란로 123",
@@ -25,26 +28,80 @@ struct ProfileView: View {
         )
     )
 
-    
-    @State private var showAlert = false
-    @State private var alertMessage = ""
-    
-    func handleSave() {
-        guard !profile.company.name.isEmpty, !profile.user.name.isEmpty, !profile.user.email.isEmpty else {
-            alertMessage = "필수 정보를 모두 입력해주세요."
-            showAlert = true
-            return
+    // 편의 접근자
+    private var displayName: String { user.name.isEmpty ? fallback.user.name : user.name }
+    private var roleDescription: String {
+        switch vm.profile {
+        case .customer:
+            return "고객사 담당자"
+        case .supplier:
+            return "공급사 담당자"
+        case .employee(let employee):
+            let dept = employee.department?.isEmpty == false ? employee.department! : fallback.user.department
+            let position = employee.position?.isEmpty == false ? employee.position! : fallback.user.position
+            return "\(dept) · \(position)"
+        case .none:
+            return "\(fallback.user.department) · \(fallback.user.position)"
         }
-        alertMessage = "정보가 성공적으로 저장되었습니다."
-        showAlert = true
-        isEditing = false
     }
-    
+
+    private var user: UserInfo {
+        switch vm.profile {
+        case .employee(let e):
+            return UserInfo(
+                name: e.name ?? "",
+                email: e.email ?? "",
+                phone: e.phoneNumber ?? "",
+                department: e.department ?? "",
+                position: e.position ?? ""
+            )
+        case .customer(let c):
+            return UserInfo(
+                name: c.customerName,
+                email: c.email,
+                phone: c.phoneNumber,
+                department: "고객사",
+                position: "담당자"
+            )
+        case .supplier(let s):
+            return UserInfo(
+                name: s.supplierUserName,
+                email: s.supplierUserEmail,
+                phone: s.supplierUserPhoneNumber,
+                department: "공급사",
+                position: "담당자"
+            )
+        case .none:
+            return fallback.user
+        }
+    }
+
+    private var company: CompanyInfo {
+        switch vm.profile {
+        case .customer(let c):
+            return CompanyInfo(
+                name: c.companyName,
+                address: combinedAddress(base: c.baseAddress, detail: c.detailAddress),
+                phone: c.officePhone,
+                businessNumber: c.businessNumber
+            )
+        case .supplier(let s):
+            return CompanyInfo(
+                name: s.companyName,
+                address: combinedAddress(base: s.baseAddress, detail: s.detailAddress),
+                phone: s.officePhone,
+                businessNumber: s.businessNumber
+            )
+        case .employee, .none:
+            return fallback.company
+        }
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    
+
                     // 프로필 카드
                     VStack(spacing: 8) {
                         ZStack {
@@ -55,70 +112,44 @@ struct ProfileView: View {
                                 .font(.system(size: 36))
                                 .foregroundColor(.blue)
                         }
-                        Text(profile.user.name)
+                        Text(displayName)
                             .font(.title3.bold())
-                        Text("\(profile.user.department) · \(profile.user.position)")
+                        Text(roleDescription)
                             .font(.subheadline)
                             .foregroundColor(.gray)
                     }
                     .padding()
                     .frame(maxWidth: .infinity)
                     .background(RoundedRectangle(cornerRadius: 12).fill(.white).shadow(radius: 1))
-                    
-                    // 고객사 정보
+
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("고객사 정보")
+                        Text("회사 정보")
                             .font(.headline)
                         VStack(spacing: 10) {
-                            CustomInput(label: "회사명", text: $profile.company.name, editable: isEditing)
-                            CustomInput(label: "회사 주소", text: $profile.company.address, editable: isEditing)
-                            CustomInput(label: "회사 전화번호", text: $profile.company.phone, editable: isEditing)
-                            CustomInput(label: "사업자등록번호", text: $profile.company.businessNumber, editable: isEditing)
+                            InfoRow(label: "회사명", value: company.name)
+                            InfoRow(label: "사업자번호", value: company.businessNumber)
+                            InfoRow(label: "대표 전화", value: company.phone)
+                            InfoRow(label: "주소", value: company.address)
                         }
                     }
                     .padding()
                     .background(RoundedRectangle(cornerRadius: 12).fill(.white).shadow(radius: 1))
-                    
-                    // 개인 정보
+
+                    // 개인 정보 (읽기 전용)
                     VStack(alignment: .leading, spacing: 12) {
                         Text("개인 정보")
                             .font(.headline)
                         VStack(spacing: 10) {
-                            CustomInput(label: "이름", text: $profile.user.name, editable: isEditing)
-                            CustomInput(label: "이메일", text: $profile.user.email, editable: isEditing, keyboard: .emailAddress)
-                            CustomInput(label: "휴대폰 번호", text: $profile.user.phone, editable: isEditing)
-                            CustomInput(label: "부서", text: $profile.user.department, editable: isEditing)
-                            CustomInput(label: "직급", text: $profile.user.position, editable: isEditing)
+                            InfoRow(label: "이름", value: user.name)
+                            InfoRow(label: "이메일", value: user.email)
+                            InfoRow(label: "휴대폰 번호", value: user.phone)
+                            InfoRow(label: "부서", value: user.department)
+                            InfoRow(label: "직급", value: user.position)
                         }
                     }
                     .padding()
                     .background(RoundedRectangle(cornerRadius: 12).fill(.white).shadow(radius: 1))
-                    
-                    // 편집 모드 버튼
-                    if isEditing {
-                        HStack(spacing: 12) {
-                            Button("취소") { isEditing = false }
-                                .buttonStyle(.bordered)
-                                .tint(.gray)
-                            Button("저장") { handleSave() }
-                                .buttonStyle(.borderedProminent)
-                                .tint(.blue)
-                        }
-                        .padding(.horizontal)
-                    }
-                    
-                    // 앱 정보
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("앱 정보")
-                            .font(.headline)
-                        VStack(spacing: 8) {
-                            InfoRow(label: "앱 버전", value: "1.0.0")
-                            InfoRow(label: "마지막 업데이트", value: "2024-01-15")
-                        }
-                    }
-                    .padding()
-                    .background(RoundedRectangle(cornerRadius: 12).fill(.white).shadow(radius: 1))
-                    
+
                     // 기타 메뉴
                     VStack(spacing: 0) {
                         MenuRow(title: "알림 설정")
@@ -127,31 +158,28 @@ struct ProfileView: View {
                         Divider()
                         MenuRow(title: "개인정보처리방침")
                         Divider()
-                        MenuRow(title: "로그아웃", isDestructive: true)
+                        MenuRow(title: "로그아웃", isDestructive: true) {
+                            session.logout()
+                        }
                     }
                     .background(RoundedRectangle(cornerRadius: 12).fill(.white).shadow(radius: 1))
-                    
+
                     Spacer(minLength: 40)
                 }
                 .padding(.horizontal)
                 .padding(.top, 10)
                 .background(Color(.systemGroupedBackground))
-            }.background(Color(.systemGroupedBackground))
-            .toolbar {
-                if !isEditing {
-                    Button("편집") { isEditing = true }
-                        .foregroundColor(.blue)
-                }
             }
-            .alert(alertMessage, isPresented: $showAlert) {
-                Button("확인", role: .cancel) { }
-            }
+            .background(Color(.systemGroupedBackground))
         }
+        .onAppear { if vm.profile == nil { vm.load() } }
     }
-    
-   
-}
 
+    private func combinedAddress(base: String, detail: String) -> String {
+        if detail.isEmpty { return base }
+        return "\(base) \(detail)"
+    }
+}
 
 #Preview {
     ProfileView()

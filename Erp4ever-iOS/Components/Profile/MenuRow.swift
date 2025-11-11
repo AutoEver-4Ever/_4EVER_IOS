@@ -10,10 +10,11 @@ import SwiftUI
 struct MenuRow: View {
     let title: String
     var isDestructive = false
+    var action: () -> Void = {}
     
     var body: some View {
         Button {
-            print("\(title) tapped")
+            action()
         } label: {
             HStack {
                 Text(title)

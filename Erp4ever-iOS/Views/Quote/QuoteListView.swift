@@ -8,113 +8,145 @@
 import SwiftUI
 
 struct QuoteListView: View {
+    @StateObject private var vm: QuoteListViewModel
     @State private var searchTerm: String = ""
-    @State private var quotes: [Quotes] = [
-        Quotes(id: "Q2024-001", customerName: "현대자동차", manager: "김철수", quoteDate: "2024-01-15", deliveryDate: "2024-02-15", amount: 15000000, status: "검토중"),
-        Quotes(id: "Q2024-002", customerName: "기아자동차", manager: "이영희", quoteDate: "2024-01-13", deliveryDate: "2024-02-10", amount: 8500000, status: "승인됨"),
-        Quotes(id: "Q2024-003", customerName: "쌍용자동차", manager: "박민수", quoteDate: "2024-01-10", deliveryDate: "2024-02-05", amount: 12000000, status: "거절됨")
-    ]
-    
-    // 필터링
-    private var filteredQuotes: [Quotes] {
-        if searchTerm.isEmpty {
-            return quotes
-        }
-        return quotes.filter { quote in
-            quote.customerName.localizedCaseInsensitiveContains(searchTerm) ||
-            quote.manager.localizedCaseInsensitiveContains(searchTerm) ||
-            quote.id.localizedCaseInsensitiveContains(searchTerm)
-        }
-    }
-    
-    
-    // 금액 포맷
-    private func formatAmount(_ amount: Int) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        return "\(formatter.string(from: NSNumber(value: amount)) ?? "0")원"
-    }
-    
+    @State private var statusSelection: String = "ALL" // ALL, PENDING, REVIEW
+    @State private var searchScope: QuoteSearchType = .quotationNumber
+    @State private var isSearchPresented: Bool = false
+
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                // 헤더
-                HStack {
-                    Text("견적 관리")
-                        .font(.title3.bold())
-                    Spacer()
-                    NavigationLink(destination: NewQuoteView()) {
-                        Text("견적 요청")
-                            .font(.caption)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .foregroundColor(.white)
-                            .background(Color.blue)
-                            .cornerRadius(8)
-                    }
-                }
-                .padding()
-                
-                // 검색창
-                HStack(spacing: 8) {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.gray)
-                    TextField("견적번호, 고객명, 담당자로 검색", text: $searchTerm)
-                        .textFieldStyle(PlainTextFieldStyle())
-                }
-                .padding(10)
-                .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.white)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.gray.opacity(0.3))
-                        )
-                )
-                .padding(.horizontal)
-                .padding(.bottom, 8)
-                
-                // 리스트
-                ScrollView {
-                    if filteredQuotes.isEmpty {
-                        VStack(spacing: 12) {
-                            Circle()
-                                .fill(Color.gray.opacity(0.1))
-                                .frame(width: 64, height: 64)
-                                .overlay(
-                                    Image(systemName: "doc.text")
-                                        .font(.system(size: 24))
-                                        .foregroundColor(.gray)
-                                )
-                            Text("검색 결과가 없습니다.")
-                                .foregroundColor(.gray)
-                        }
-                        .padding(.top, 60)
-                    } else {
-                        LazyVStack(spacing: 10) {
-                            ForEach(filteredQuotes) { quote in
-                                NavigationLink(destination: QuoteDetailView(id: quote.id)) {
-                                    QuoteCard(quote: quote,
-                                              statusCode: quote.status,
-                                              formatAmount: formatAmount)
-                                }
-                            }
-                        }
-                        
-                        .padding(.horizontal)
-                        .padding(.top, 20)
-                        .padding(.bottom, 16)
-                    }
+            ScrollView {
+                VStack(spacing: 0) {
+                    
+                    statusFilter
+                        .padding(.top, 8)
+
+                    QuoteListSection(
+                        items: vm.items,
+                        isLoading: vm.isLoading,
+                        error: vm.error,
+                        onRetry: { vm.loadInitial() },
+                        onReachEnd: { vm.loadNextPage() }
+                    )
                 }
                 .background(Color(.systemGroupedBackground))
             }
-            .navigationBarHidden(true)
             .background(Color(.systemGroupedBackground))
+            .navigationTitle("견적 관리")
+            .navigationBarTitleDisplayMode(.large)
+        }
+        .searchScopes($searchScope) {
+            ForEach(QuoteSearchType.allCases) { scope in
+                Text(scope.label).tag(scope)
+            }
+        }
+        .onSubmit(of: .search) { triggerSearch() }
+        .onChange(of: searchTerm) { _, _ in triggerSearch() }
+        .onChange(of: searchScope) { _, _ in triggerSearch() }
+        .onChange(of: isSearchPresented) { _, presented in
+            if !presented {
+                searchTerm = ""
+                vm.applySearch("", type: searchScope.rawValue)
+            }
+        }
+        .onAppear {
+            if vm.items.isEmpty { vm.loadInitial() }
+        }
+    }
+
+    private var statusFilter: some View {
+        VStack(spacing: 8) {
+            Picker("상태", selection: $statusSelection) {
+                Text("전체").tag("ALL")
+                Text("대기").tag("PENDING")
+                Text("검토중").tag("REVIEW")
+            }
+            .pickerStyle(.segmented)
+            .onChange(of: statusSelection) { _, newValue in
+                vm.applyStatus(newValue == "ALL" ? nil : newValue)
+            }
+        }
+        .padding(.horizontal)
+        .padding(.bottom, 8)
+    }
+
+    private func triggerSearch() {
+        let trimmed = searchTerm.trimmingCharacters(in: .whitespacesAndNewlines)
+        vm.applySearch(trimmed, type: searchScope.rawValue)
+    }
+}
+
+
+// MARK: - Supporting Types
+
+private enum QuoteSearchType: String, CaseIterable, Identifiable {
+    case quotationNumber
+    case customerName
+    case managerName
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .quotationNumber: return "견적번호"
+        case .customerName: return "고객명"
+        case .managerName: return "담당자"
+        }
+    }
+
+    var placeholder: String {
+        switch self {
+        case .quotationNumber: return "견적번호로 검색"
+        case .customerName: return "고객명으로 검색"
+        case .managerName: return "담당자로 검색"
         }
     }
 }
 
-#Preview {
-    QuoteListView()
+// MARK: - 의존성
+extension QuoteListView {
+    init(vm: QuoteListViewModel = QuoteListViewModel()) {
+        _vm = StateObject(wrappedValue: vm)
+    }
+}
+
+// MARK: - Preview with mock data
+#Preview("QuoteListView – Mock Data") {
+    let mockVM = QuoteListViewModel()
+    mockVM.items = [
+        QuotationListItem(
+            quotationId: "018f2c1a-aaaa-bbbb-cccc-000000000001",
+            quotationNumber: "Q2024-001",
+            customerName: "현대자동차",
+            productId: "PROD-001",
+            dueDate: "2024-02-15",
+            quantity: 10,
+            uomName: "EA",
+            statusCode: "REVIEW"
+        ),
+        QuotationListItem(
+            quotationId: "018f2c1a-aaaa-bbbb-cccc-000000000002",
+            quotationNumber: "Q2024-002",
+            customerName: "기아자동차",
+            productId: "PROD-002",
+            dueDate: "2024-03-01",
+            quantity: 5,
+            uomName: "EA",
+            statusCode: "APPROVAL"
+        ),
+        QuotationListItem(
+            quotationId: "018f2c1a-aaaa-bbbb-cccc-000000000003",
+            quotationNumber: "Q2024-003",
+            customerName: "쌍용자동차",
+            productId: nil,
+            dueDate: "2024-02-05",
+            quantity: nil,
+            uomName: nil,
+            statusCode: "PENDING"
+        )
+    ]
+    mockVM.hasNext = false
+    return QuoteListView(vm: mockVM)
 }
 
