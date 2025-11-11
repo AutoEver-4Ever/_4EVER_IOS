@@ -24,18 +24,21 @@ struct MainAppView: View {
     @State private var selectedTap: MyTab = .home
     
     // 검색 상태
-    @State private var query: String = ""
     @State private var isSearchPresented: Bool = false
     
     // 마지막 View를 기억하는 상태
     @State private var lastContentTab: MyTab = .home
     
     //
-    @StateObject private var searchCoordinator = searchCoordinator()
+    @StateObject private var searchCoordinator = SearchCoordinator()
     
 
     var body: some View {
         let userType = session.currentUser?.userType
+        let queryBinding = Binding(
+            get: { searchCoordinator.query },
+            set: { searchCoordinator.updateQuery($0) }
+        )
 
         TabView(selection: $selectedTap) {
             Tab("홈", systemImage: "house", value: MyTab.home) {
@@ -72,13 +75,26 @@ struct MainAppView: View {
             Tab(value: MyTab.search, role: .search) {
                 NavigationStack {
                     SearchView()
-                        .searchable(text: $query,
+                        .environmentObject(searchCoordinator)
+                        .searchable(text: queryBinding,
                                     isPresented: $isSearchPresented,
                                     prompt: Text("무엇이든 검색하세요"))
                 }
             } label: {
                 Label("검색", systemImage: "magnifyingglass")
             }
+        }
+        .onChange(of: selectedTap) { newValue in
+            if newValue == .search {
+                searchCoordinator.preselectScope(from: lastContentTab)
+                isSearchPresented = true
+            } else {
+                lastContentTab = newValue
+                isSearchPresented = false
+            }
+        }
+        .onChange(of: isSearchPresented) { presented in
+            searchCoordinator.isSearching = presented
         }
     }
 }
