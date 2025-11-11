@@ -17,6 +17,8 @@ struct SearchView: View {
                 scopeSelector
                 if effectiveScope == .purchaseOrder {
                     purchaseOrderFilter
+                } else if effectiveScope == .accountReceivable {
+                    salesInvoiceFilter
                 }
                 if trimmedQuery.isEmpty {
                     suggestionSection
@@ -43,6 +45,10 @@ struct SearchView: View {
         }
         .onChange(of: coordinator.purchaseOrderSearchType) { _ in
             guard effectiveScope == .purchaseOrder, !trimmedQuery.isEmpty else { return }
+            coordinator.performSearch()
+        }
+        .onChange(of: coordinator.salesInvoiceDateFilter) { _ in
+            guard effectiveScope == .accountReceivable, !trimmedQuery.isEmpty else { return }
             coordinator.performSearch()
         }
     }
@@ -103,6 +109,28 @@ struct SearchView: View {
         Binding(
             get: { coordinator.purchaseOrderSearchType },
             set: { coordinator.purchaseOrderSearchType = $0 }
+        )
+    }
+
+    private var salesInvoiceFilter: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("매출 전표 기간")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Picker("매출 전표 기간", selection: salesInvoiceFilterBinding) {
+                ForEach(SearchCoordinator.SalesInvoiceDateFilter.allCases, id: \.self) { filter in
+                    Text(filter.title).tag(filter)
+                }
+            }
+            .pickerStyle(.segmented)
+        }
+    }
+
+    private var salesInvoiceFilterBinding: Binding<SearchCoordinator.SalesInvoiceDateFilter> {
+        Binding(
+            get: { coordinator.salesInvoiceDateFilter },
+            set: { coordinator.salesInvoiceDateFilter = $0 }
         )
     }
 
