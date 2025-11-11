@@ -109,13 +109,13 @@ struct SearchView: View {
     // MARK: - Suggestion Section (query 없음)
 
     private var suggestionSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(suggestionTitle(effectiveScope))
+        VStack(alignment: .leading, spacing: 12) {
+            Text("\(effectiveScope.title) 검색을 시작해보세요")
                 .font(.headline)
-            Text(suggestionDescription(effectiveScope))
+            Text("검색어를 입력하면 \(effectiveScope.title) 결과를 바로 보여드립니다.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-            suggestionTiles(for: effectiveScope)
+            Divider()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -216,95 +216,6 @@ struct SearchView: View {
 
     private func scopeBorderColor(_ scope: SearchCoordinator.Scope) -> Color {
         effectiveScope == scope ? .blue : Color.gray.opacity(0.2)
-    }
-
-    // MARK: - Suggestions
-
-    @ViewBuilder
-    // - 스코프별 추천 타일을 노출해 검색을 유도
-    private func suggestionTiles(for scope: SearchCoordinator.Scope) -> some View {
-        switch scope {
-        case .purchaseOrder:
-            suggestionCard(
-                title: "최근 발주서",
-                description: "자주 확인한 발주서를 모아 보여드립니다.",
-                icon: "doc.text"
-            )
-        case .accountReceivable:
-            suggestionCard(
-                title: "매출 전표 요약",
-                description: "최근 발행된 매출 전표 상태를 빠르게 확인하세요.",
-                icon: "list.bullet"
-            )
-        case .quote:
-            suggestionCard(
-                title: "견적서 즐겨찾기",
-                description: "고객사와 주고받은 최신 견적서를 찾아보세요.",
-                icon: "magnifyingglass.circle"
-            )
-        case .accountPayable:
-            suggestionCard(
-                title: "매입 전표 일정",
-                description: "다가오는 납기일 기준으로 매입 전표를 정리합니다.",
-                icon: "calendar"
-            )
-        default:
-            suggestionCard(
-                title: "통합 검색",
-                description: "원하는 영역을 선택한 뒤 검색을 시작하세요.",
-                icon: "magnifyingglass"
-            )
-        }
-    }
-
-    // - 추천 블록 타이틀 복수화를 피하기 위해 별도 함수로 분리
-    private func suggestionTitle(_ scope: SearchCoordinator.Scope) -> String {
-        switch scope {
-        case .purchaseOrder: return "발주서에서 찾고 계신가요?"
-        case .accountReceivable: return "매출 전표 조회"
-        case .quote: return "견적서를 바로 검색하세요"
-        case .accountPayable: return "매입 전표 내역"
-        default: return "검색할 영역을 선택하세요"
-        }
-    }
-
-    // - 추천 블록 설명 문구
-    private func suggestionDescription(_ scope: SearchCoordinator.Scope) -> String {
-        switch scope {
-        case .purchaseOrder: return "최근 승인 상태, 공급사명, 발주 번호로 즉시 찾아보세요."
-        case .accountReceivable: return "발행일, 고객사, 금액 기준으로 매출 전표를 필터링합니다."
-        case .quote: return "견적 번호나 고객 사명으로 검색하면 곧바로 상세로 이동할 수 있습니다."
-        case .accountPayable: return "발행일자·납기일에 맞춰 매입 전표를 정리했습니다."
-        default: return "원하는 업무 영역을 선택하면 맞춤 추천과 검색이 열립니다."
-        }
-    }
-
-    // - 단일 카드 컴포넌트로 재사용
-    private func suggestionCard(title: String, description: String, icon: String) -> some View {
-        HStack(spacing: 16) {
-            Image(systemName: icon)
-                .renderingMode(.template)
-                .foregroundStyle(.blue)
-                .font(.title3)
-                .frame(width: 20, height: 20)
-                .padding(8)
-                .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.blue.opacity(0.1))
-                )
-
-            VStack(alignment: .leading, spacing: 6) {
-                Text(title)
-                    .font(.subheadline.weight(.semibold))
-                Text(description)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer()
-        }
-        .padding()
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemBackground)))
-        .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
 
     // - 에러가 발생했을 때 보여줄 공통 카드
