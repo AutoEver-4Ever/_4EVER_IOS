@@ -47,6 +47,20 @@ final class SearchCoordinator: ObservableObject {
         }
     }
 
+    enum QuoteSearchType: String, CaseIterable {
+        case quotationNumber = "quotationNumber"
+        case customerName = "customerName"
+        case managerName = "managerName"
+
+        var title: String {
+            switch self {
+            case .quotationNumber: return "견적번호"
+            case .customerName: return "고객사명"
+            case .managerName: return "담당자"
+            }
+        }
+    }
+
     enum SalesInvoiceDateFilter: Hashable, CaseIterable {
         case all
         case last30Days
@@ -66,6 +80,7 @@ final class SearchCoordinator: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String? = nil
     @Published var purchaseOrderSearchType: PurchaseOrderSearchType = .supplierCompanyName
+    @Published var quoteSearchType: QuoteSearchType = .quotationNumber
     @Published var salesInvoiceDateFilter: SalesInvoiceDateFilter = .all
 
     @Published var resultsPO: [PurchaseOrderListItem] = []
@@ -157,6 +172,8 @@ final class SearchCoordinator: ObservableObject {
         switch scope {
         case .purchaseOrder:
             await searchPurchaseOrders(keyword: keyword)
+        case .quote:
+            await searchQuotes(keyword: keyword)
         case .accountReceivable:
             await searchSalesInvoices(keyword: keyword)
         default:
@@ -202,6 +219,51 @@ final class SearchCoordinator: ObservableObject {
         } catch {
             await MainActor.run {
                 self.errorMessage = "발주서 검색 중 알 수 없는 오류가 발생했습니다."
+                self.isLoading = false
+            }
+        }
+    }
+
+    private func searchQuotes(keyword: String) async {
+        guard let token = TokenStore.shared.loadAccessToken() else {
+            await MainActor.run {
+                self.errorMessage = "인증 토큰이 없습니다. 다시 로그인해주세요."
+                self.isLoading = false
+            }
+            return
+        }
+
+        var query = QuoteListQuery(
+            startDate: nil,
+            endDate: nil,
+            status: nil,
+            type: quoteSearchType.rawValue,
+            search: keyword,
+            sort: nil,
+            page: 0,
+            size: 20
+        )
+
+        do {
+            let page = try await QuoteService.shared.fetchQuotationList(accessToken: token, query: query)
+            await MainActor.run {
+                self.resultsQuote = page.content
+                self.errorMessage = nil
+                self.markUpdated()
+            }
+        } catch QuoteServiceError.unauthorized {
+            await MainActor.run {
+                self.errorMessage = "세션이 만료되었습니다. 다시 로그인해주세요."
+                self.isLoading = false
+            }
+        } catch let QuoteServiceError.http(status, _) {
+            await MainActor.run {
+                self.errorMessage = "견적 검색 실패 (\(status))"
+                self.isLoading = false
+            }
+        } catch {
+            await MainActor.run {
+                self.errorMessage = "견적 검색 중 알 수 없는 오류가 발생했습니다."
                 self.isLoading = false
             }
         }

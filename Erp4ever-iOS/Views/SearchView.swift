@@ -15,11 +15,7 @@ struct SearchView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 scopeSelector
-                if effectiveScope == .purchaseOrder {
-                    purchaseOrderFilter
-                } else if effectiveScope == .accountReceivable {
-                    salesInvoiceFilter
-                }
+                scopeSpecificFilter
                 if trimmedQuery.isEmpty {
                     suggestionSection
                 } else {
@@ -45,6 +41,10 @@ struct SearchView: View {
         }
         .onChange(of: coordinator.purchaseOrderSearchType) { _ in
             guard effectiveScope == .purchaseOrder, !trimmedQuery.isEmpty else { return }
+            coordinator.performSearch()
+        }
+        .onChange(of: coordinator.quoteSearchType) { _ in
+            guard effectiveScope == .quote, !trimmedQuery.isEmpty else { return }
             coordinator.performSearch()
         }
         .onChange(of: coordinator.salesInvoiceDateFilter) { _ in
@@ -90,16 +90,44 @@ struct SearchView: View {
         }
     }
 
-    private var purchaseOrderFilter: some View {
+    @ViewBuilder
+    private var scopeSpecificFilter: some View {
+        switch effectiveScope {
+        case .purchaseOrder:
+            filterGroup(title: "발주서 검색 기준", selection: purchaseOrderTypeBinding) {
+                ForEach(SearchCoordinator.PurchaseOrderSearchType.allCases, id: \.self) {
+                    Text($0.title).tag($0)
+                }
+            }
+        case .quote:
+            filterGroup(title: "견적 검색 기준", selection: quoteTypeBinding) {
+                ForEach(SearchCoordinator.QuoteSearchType.allCases, id: \.self) {
+                    Text($0.title).tag($0)
+                }
+            }
+        case .accountReceivable:
+            filterGroup(title: "매출 전표 기간", selection: salesInvoiceFilterBinding) {
+                ForEach(SearchCoordinator.SalesInvoiceDateFilter.allCases, id: \.self) {
+                    Text($0.title).tag($0)
+                }
+            }
+        default:
+            EmptyView()
+        }
+    }
+
+    private func filterGroup<SelectionValue: Hashable, Content: View>(
+        title: String,
+        selection: Binding<SelectionValue>,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("발주서 검색 기준")
+            Text(title)
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            Picker("발주서 검색 기준", selection: purchaseOrderTypeBinding) {
-                ForEach(SearchCoordinator.PurchaseOrderSearchType.allCases, id: \.self) { type in
-                    Text(type.title).tag(type)
-                }
+            Picker(title, selection: selection) {
+                content()
             }
             .pickerStyle(.segmented)
         }
@@ -112,19 +140,11 @@ struct SearchView: View {
         )
     }
 
-    private var salesInvoiceFilter: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("매출 전표 기간")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-
-            Picker("매출 전표 기간", selection: salesInvoiceFilterBinding) {
-                ForEach(SearchCoordinator.SalesInvoiceDateFilter.allCases, id: \.self) { filter in
-                    Text(filter.title).tag(filter)
-                }
-            }
-            .pickerStyle(.segmented)
-        }
+    private var quoteTypeBinding: Binding<SearchCoordinator.QuoteSearchType> {
+        Binding(
+            get: { coordinator.quoteSearchType },
+            set: { coordinator.quoteSearchType = $0 }
+        )
     }
 
     private var salesInvoiceFilterBinding: Binding<SearchCoordinator.SalesInvoiceDateFilter> {
